@@ -78,7 +78,7 @@
             }
 
             // Send code to backend server via WebSocket
-            const socket = new WebSocket('ws://192.168.253.247:7890');
+            const socket = new WebSocket('ws://abdougg.github.io/Un-Exec/:7890');
             socket.onopen = function () {
                 socket.send(JSON.stringify({ script: code }));
             };
