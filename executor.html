@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Executor</title>
+    <style>
+        body {
+            background-color: #2e2e2e;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #executor {
+            width: 70%;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        }
+        #codeEditor {
+            width: 100%;
+            height: 300px;
+            background-color: #1c1c1c;
+            color: #d4d4d4;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #controls {
+            margin-top: 15px;
+            text-align: right;
+        }
+        button {
+            background-color: #ff5c5c;
+            border: none;
+            padding: 10px 20px;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        button.clear {
+            background-color: #5c5cff;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div id="executor">
+        <h2>External Executor</h2>
+        <textarea id="codeEditor" placeholder="Write your script here..."></textarea>
+        <div id="controls">
+            <button class="clear" onclick="clearCode()">Clear</button>
+            <button onclick="executeCode()">Execute</button>
+        </div>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function clearCode() {
+            document.getElementById('codeEditor').value = '';
+        }
+
+        function executeCode() {
+            const code = document.getElementById('codeEditor').value;
+            if (code.trim() === '') {
+                alert('Please enter some code to execute.');
+                return;
+            }
+
+            // Send code to backend server via WebSocket
+            const socket = new WebSocket('ws://192.168.253.247:7890');
+            socket.onopen = function () {
+                socket.send(JSON.stringify({ script: code }));
+            };
+            socket.onmessage = function (event) {
+                const result = JSON.parse(event.data);
+                alert(result.message);
+            };
+            socket.onerror = function (error) {
+                alert('Error connecting to server.');
+            };
+        }
+    </script>
+</body>
+</html>
