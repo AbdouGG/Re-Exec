@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Executor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>External Executor</h1>
+        <textarea id="script-editor" placeholder="Enter your script here..."></textarea>
+        <div class="button-container">
+            <button id="clear-btn">Clear</button>
+            <button id="execute-btn">Execute</button>
+        </div>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        // Get the base64-encoded IP from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const encodedIP = urlParams.get('ip');
+
+        if (!encodedIP) {
+            document.body.innerHTML = '<h2>Invalid or missing IP address!</h2>';
+            throw new Error("No IP address provided.");
+        }
+
+        // Decode the IP address
+        const decodedIP = atob(encodedIP);
+
+        // Establish WebSocket connection
+        const ws = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+
+        // Update status
+        const status = document.getElementById('status');
+        ws.onopen = () => status.textContent = "Connected to WebSocket server.";
+        ws.onclose = () => status.textContent = "WebSocket connection closed.";
+        ws.onerror = (error) => status.textContent = "WebSocket error: " + error.message;
+
+        // Handle script execution
+        const executeBtn = document.getElementById('execute-btn');
+        executeBtn.addEventListener('click', () => {
+            const script = document.getElementById('script-editor').value;
+            ws.send(JSON.stringify({ script }));
+        });
+
+        // Clear script editor
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('script-editor').value = '';
+        });
+
+        // Handle incoming messages (if needed)
+        ws.onmessage = (event) => {
+            const response = event.data;
+            status.textContent = "Script executed successfully.";
+            console.log("Response from server:", response);
+        };
+    </script>
+</body>
+</html>
