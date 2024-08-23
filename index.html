@@ -3,92 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>External Executor</title>
-    <style>
-        body {
-            background-color: #2e2e2e;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        #executor {
-            width: 70%;
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-        }
-        #codeEditor {
-            width: 100%;
-            height: 300px;
-            background-color: #1c1c1c;
-            color: #d4d4d4;
-            border: none;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        #controls {
-            margin-top: 15px;
-            text-align: right;
-        }
-        button {
-            background-color: #ff5c5c;
-            border: none;
-            padding: 10px 20px;
-            color: #fff;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        button.clear {
-            background-color: #5c5cff;
-        }
-        button:hover {
-            opacity: 0.8;
-        }
-    </style>
+    <title>Emu-Exec - External Executor</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="executor">
-        <h2>External Executor</h2>
-        <textarea id="codeEditor" placeholder="Write your script here..."></textarea>
-        <div id="controls">
-            <button class="clear" onclick="clearCode()">Clear</button>
-            <button onclick="executeCode()">Execute</button>
-        </div>
-        <div id="output"></div>
+    <div class="container">
+        <h1>Welcome to Emu-Exec</h1>
+        <p>Emu-Exec is a powerful external executor designed for advanced Roblox scripting. With this tool, you can execute scripts remotely via a WebSocket connection, offering flexibility and control over your game development.</p>
+
+        <h2>How It Works</h2>
+        <p>
+            1. Download the Emu-Exec application.<br>
+            2. Launch the application to start a WebSocket server.<br>
+            3. The application will provide you with a server link and an IP address encoded in Base64.<br>
+            4. Use the server link to access the executor interface.<br>
+            5. Enter your script and execute it directly in Roblox.
+        </p>
+
+        <h2>Features</h2>
+        <ul>
+            <li>Remote script execution</li>
+            <li>Real-time connection status</li>
+            <li>Secure WebSocket communication</li>
+        </ul>
+
+        <p id="redirect-message"></p>
     </div>
 
     <script>
-        function clearCode() {
-            document.getElementById('codeEditor').value = '';
-        }
+        // Check for the 'ip' parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const encodedIP = urlParams.get('ip');
 
-        function executeCode() {
-            const code = document.getElementById('codeEditor').value;
-            if (code.trim() === '') {
-                alert('Please enter some code to execute.');
-                return;
-            }
-
-            // Send code to backend server via WebSocket
-            const socket = new WebSocket('ws://abdougg.github.io/Un-Exec/:7890');
-            socket.onopen = function () {
-                socket.send(JSON.stringify({ script: code }));
-            };
-            socket.onmessage = function (event) {
-                const result = JSON.parse(event.data);
-                alert(result.message);
-            };
-            socket.onerror = function (error) {
-                alert('Error connecting to server.');
-            };
+        if (encodedIP) {
+            // Redirect to the executor page if 'ip' is present
+            window.location.href = `executor.html?ip=${encodedIP}`;
+        } else {
+            document.getElementById('redirect-message').textContent = "To access the executor, please use the provided server link with the Base64 encoded IP.";
         }
     </script>
 </body>
