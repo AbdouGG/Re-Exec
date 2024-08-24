@@ -4,17 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>External Executor</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background-color: #2e2e2e;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #executor {
+            width: 70%;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+        }
+        #codeEditor {
+            width: 100%;
+            height: 300px;
+            background-color: #1c1c1c;
+            color: #d4d4d4;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        #controls {
+            margin-top: 15px;
+            text-align: right;
+        }
+        button {
+            background-color: #ff5c5c;
+            border: none;
+            padding: 10px 20px;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        button.clear {
+            background-color: #5c5cff;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>External Executor</h1>
-        <textarea id="script-editor" placeholder="Enter your script here..."></textarea>
-        <div class="button-container">
-            <button id="clear-btn">Clear</button>
-            <button id="execute-btn">Execute</button>
+    <div id="executor">
+        <h2>External Executor</h2>
+        <textarea id="codeEditor" placeholder="Write your script here..."></textarea>
+        <div id="controls">
+            <button class="clear" onclick="clearCode()">Clear</button>
+            <button onclick="executeCode()">Execute</button>
         </div>
-        <p id="status"></p>
+        <div id="output"></div>
     </div>
 
     <script>
@@ -30,46 +78,37 @@
         // Decode the IP address
         const decodedIP = atob(encodedIP);
 
-        // Establish WebSocket connection
-        const ws = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+        function clearCode() {
+            document.getElementById('codeEditor').value = '';
+        }
 
-        // Update status
-        const status = document.getElementById('status');
-        ws.onopen = () => {
-            status.textContent = "Connected to WebSocket server.";
-        };
-        ws.onclose = () => {
-            status.textContent = "WebSocket connection closed.";
-        };
-        ws.onerror = (error) => {
-            status.textContent = "WebSocket error: " + error.message;
-        };
-
-        // Handle script execution
-        const executeBtn = document.getElementById('execute-btn');
-        executeBtn.addEventListener('click', () => {
-            const script = document.getElementById('script-editor').value.trim();
-            if (script) {
-                ws.send(JSON.stringify({ script }));
-                status.textContent = "Script sent for execution.";
-            } else {
-                status.textContent = "Script editor is empty!";
+        function executeCode() {
+            const code = document.getElementById('codeEditor').value;
+            if (code.trim() === '') {
+                alert('Please enter some code to execute.');
+                return;
             }
-        });
 
-        // Clear script editor
-        const clearBtn = document.getElementById('clear-btn');
-        clearBtn.addEventListener('click', () => {
-            document.getElementById('script-editor').value = '';
-            status.textContent = "Script editor cleared.";
-        });
+            // Establish WebSocket connection using the decoded IP
+            const socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
 
-        // Handle incoming messages (if needed)
-        ws.onmessage = (event) => {
-            const response = event.data;
-            status.textContent = "Script executed successfully.";
-            console.log("Response from server:", response);
-        };
+            socket.onopen = function () {
+                socket.send(JSON.stringify({ script: code }));
+            };
+
+            socket.onmessage = function (event) {
+                alert('Script executed successfully!');
+            };
+
+            socket.onerror = function (error) {
+                alert('Error connecting to server.');
+                console.error('WebSocket Error:', error);
+            };
+
+            socket.onclose = function () {
+                console.log('WebSocket connection closed.');
+            };
+        }
     </script>
 </body>
 </html>
