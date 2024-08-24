@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <h1>External Executor</h1>
-        <textarea id="script-editor" placeholder="Enter your script here... dont look at me like that ya taha ur ez  :))"></textarea>
+        <textarea id="script-editor" placeholder="Enter your script here..."></textarea>
         <div class="button-container">
             <button id="clear-btn">Clear</button>
             <button id="execute-btn">Execute</button>
@@ -35,20 +35,33 @@
 
         // Update status
         const status = document.getElementById('status');
-        ws.onopen = () => status.textContent = "Connected to WebSocket server.";
-        ws.onclose = () => status.textContent = "WebSocket connection closed.";
-        ws.onerror = (error) => status.textContent = "WebSocket error: " + error.message;
+        ws.onopen = () => {
+            status.textContent = "Connected to WebSocket server.";
+        };
+        ws.onclose = () => {
+            status.textContent = "WebSocket connection closed.";
+        };
+        ws.onerror = (error) => {
+            status.textContent = "WebSocket error: " + error.message;
+        };
 
         // Handle script execution
         const executeBtn = document.getElementById('execute-btn');
         executeBtn.addEventListener('click', () => {
-            const script = document.getElementById('script-editor').value;
-            ws.send(JSON.stringify({ script }));
+            const script = document.getElementById('script-editor').value.trim();
+            if (script) {
+                ws.send(JSON.stringify({ script }));
+                status.textContent = "Script sent for execution.";
+            } else {
+                status.textContent = "Script editor is empty!";
+            }
         });
 
         // Clear script editor
-        document.getElementById('clear-btn').addEventListener('click', () => {
+        const clearBtn = document.getElementById('clear-btn');
+        clearBtn.addEventListener('click', () => {
             document.getElementById('script-editor').value = '';
+            status.textContent = "Script editor cleared.";
         });
 
         // Handle incoming messages (if needed)
