@@ -92,7 +92,7 @@
         // Function to establish a WebSocket connection
         function connectWebSocket() {
             try {
-                socket = new WebSocket(`wss://${decodedIP}:7890/Execute`);
+                socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
 
                 socket.onopen = function () {
                     console.log('Connected to the WebSocket server.');
