@@ -109,9 +109,11 @@
             if (connected) {
                 lamp.classList.add('connected');
                 statusText.textContent = 'Connected';
+                statusText.style.color = '#5cff5c'; // Set text color to green when connected
             } else {
                 lamp.classList.remove('connected');
                 statusText.textContent = 'Not Connected';
+                statusText.style.color = '#ff5c5c'; // Set text color to red when not connected
             }
         }
 
