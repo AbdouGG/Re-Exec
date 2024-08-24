@@ -126,7 +126,7 @@
             color: #fff;
             padding: 10px;
             position: fixed;
-            bottom: 20px; /* Change from 'top' to 'bottom' */
+            bottom: 20px;
             right: 20px;
             border-radius: 5px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
@@ -143,46 +143,6 @@
         @keyframes fadeout {
             from {opacity: 1;}
             to {opacity: 0;}
-        }
-
-        /* Settings Sidebar */
-        #settings-sidebar {
-            position: fixed;
-            top: 0;
-            right: -300px; /* Start off-screen */
-            width: 300px;
-            height: 100%;
-            background-color: #1f1f1f;
-            color: #e0e0e0;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            transition: right 0.3s ease;
-            z-index: 1001;
-        }
-
-        #settings-sidebar h3 {
-            margin-top: 0;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        #settings-sidebar label {
-            font-size: 14px;
-            color: #b3b3b3;
-        }
-
-        #settings-sidebar select {
-            width: 100%;
-            padding: 5px;
-            margin-top: 5px;
-            background-color: #252526;
-            color: #e0e0e0;
-            border: 1px solid #3e3e3e;
-            border-radius: 5px;
-        }
-
-        #settings-sidebar.open {
-            right: 0; /* Slide into view */
         }
     </style>
     <!-- Monaco Editor CDN -->
@@ -216,30 +176,6 @@
     <!-- Notification for feedback -->
     <div id="notification"></div>
 
-    <!-- Settings Sidebar -->
-    <div id="settings-sidebar">
-        <h3>Settings</h3>
-        <label for="theme-select">Page Theme:</label>
-        <select id="theme-select">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-        </select>
-        <br><br>
-        <label for="editor-theme-select">Editor Theme:</label>
-        <select id="editor-theme-select">
-            <option value="vs-dark">Dark</option>
-            <option value="vs-light">Light</option>
-        </select>
-        <br><br>
-        <label for="language-select">Language:</label>
-        <select id="language-select">
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="cpp">C++</option>
-            <!-- Add more languages as needed -->
-        </select>
-    </div>
-
     <script>
         let editor;
         let socket;
@@ -264,39 +200,21 @@
             throw new Error("No IP address provided.");
         }
 
-        const ip = atob(encodedIP);
-        const wsUrl = `ws://${ip}:7890/Execute`;
+        // Decode the IP address
+        const decodedIP = atob(encodedIP);
 
-        // WebSocket setup
-        socket = new WebSocket(wsUrl);
-
-        socket.addEventListener('open', function () {
-            document.getElementById('lamp').classList.add('connected');
-            document.getElementById('status-text').textContent = 'Connected';
-        });
-
-        socket.addEventListener('close', function () {
-            document.getElementById('lamp').classList.remove('connected');
-            document.getElementById('status-text').textContent = 'Not Connected';
-        });
-
-        socket.addEventListener('message', function (event) {
-            showNotification("Received from server: " + event.data);
-        });
-
-        function executeCode() {
-            const code = editor.getValue();
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(code);
-                showNotification("Code sent to the server!");
+        function updateConnectionStatus(connected) {
+            const lamp = document.getElementById('lamp');
+            const statusText = document.getElementById('status-text');
+            if (connected) {
+                lamp.classList.add('connected');
+                statusText.textContent = 'Connected';
+                statusText.style.color = '#5cff5c'; // Set text color to green when connected
             } else {
-                showNotification("Connection is not open.");
+                lamp.classList.remove('connected');
+                statusText.textContent = 'Not Connected';
+                statusText.style.color = '#ff5c5c'; // Set text color to red when not connected
             }
-        }
-
-        function clearCode() {
-            editor.setValue('');
-            showNotification("Code cleared.");
         }
 
         function showNotification(message) {
@@ -308,47 +226,70 @@
             }, 3000);
         }
 
+        function clearCode() {
+            editor.setValue('');
+        }
+
+        function executeCode() {
+            const code = editor.getValue();
+            if (code.trim() === '') {
+                showNotification('Please enter some code to execute.');
+                return;
+            }
+
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                showNotification('Not connected to server.');
+                return;
+            }
+
+            socket.send(JSON.stringify({ script: code }));
+        }
+
+        function connectToWebSocket() {
+            socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+
+            socket.onopen = function () {
+                updateConnectionStatus(true);
+                showNotification('Connected to server.');
+            };
+
+            socket.onmessage = function (event) {
+                showNotification('Script executed successfully!');
+            };
+
+            socket.onerror = function (error) {
+                showNotification('Error connecting to server.');
+                console.error('WebSocket Error:', error);
+            };
+
+            socket.onclose = function () {
+                updateConnectionStatus(false);
+                showNotification('Disconnected from server.');
+                console.log('WebSocket connection closed.');
+            };
+        }
+
         function goHome() {
-            window.location.href = '/home';
+            showNotification('Home button clicked!');
+            // Implement home functionality
+        }
+
+        function openSettings() {
+            showNotification('Settings button clicked!');
+            // Implement settings functionality
         }
 
         function showHowToUse() {
-            alert("To use this tool, connect to an emulator and write your scripts in the editor.");
+            showNotification('How to use clicked!');
+            // Implement how to use functionality
         }
 
         function joinDiscord() {
-            window.open('https://discord.gg/yourdiscord', '_blank');
+            window.open('https://discord.com', '_blank');
         }
 
-        // Open Settings Sidebar
-        function openSettings() {
-            const sidebar = document.getElementById('settings-sidebar');
-            sidebar.classList.toggle('open');
-        }
-
-        // Change page theme
-        document.getElementById('theme-select').addEventListener('change', function() {
-            const theme = this.value;
-            if (theme === 'dark') {
-                document.body.style.backgroundColor = '#1a1a1a';
-                document.body.style.color = '#e0e0e0';
-            } else {
-                document.body.style.backgroundColor = '#ffffff';
-                document.body.style.color = '#000000';
-            }
-        });
-
-        // Change editor theme
-        document.getElementById('editor-theme-select').addEventListener('change', function() {
-            const editorTheme = this.value;
-            monaco.editor.setTheme(editorTheme);
-        });
-
-        // Change editor language
-        document.getElementById('language-select').addEventListener('change', function() {
-            const language = this.value;
-            monaco.editor.setModelLanguage(editor.getModel(), language);
-        });
+        // Attempt to connect when the page loads
+        connectToWebSocket();
     </script>
 </body>
 </html>
