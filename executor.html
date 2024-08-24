@@ -3,43 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>External Executor</title>
+    <title>Emu-Exec</title>
     <style>
         body {
-            background-color: #2e2e2e;
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
             margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
         }
 
-        #executor {
-            width: 90%;
-            max-width: 800px;
+        /* Sidebar Styles */
+        .sidebar {
+            width: 200px;
             background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding-top: 20px;
+        }
+
+        .sidebar a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 10px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .sidebar a:hover {
+            background-color: #333;
+            border-radius: 8px;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 5px 0;
+            color: #aaa;
+        }
+
+        #connection-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        #connection-status .status-dot {
+            height: 12px;
+            width: 12px;
+            background-color: red; /* Default color for "Not Connected" */
+            border-radius: 50%;
+            margin-right: 10px;
         }
 
         #editor {
             width: 100%;
+            max-width: 800px;
             height: 300px;
-            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+            border-radius: 4px;
         }
 
-        #controls {
-            margin-top: 15px;
+        .button-container {
             display: flex;
             justify-content: flex-end;
             width: 100%;
+            max-width: 800px;
         }
 
         button {
@@ -51,8 +103,6 @@
             border-radius: 5px;
             cursor: pointer;
             margin-left: 10px;
-            display: flex;
-            align-items: center;
         }
 
         button.clear {
@@ -63,74 +113,37 @@
             opacity: 0.9;
         }
 
-        #connection-status {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-            font-size: 14px;
-            color: #ff5c5c; /* Default to red (disconnected) */
-        }
-
-        #connection-status.connected {
-            color: #5cff5c; /* Green when connected */
-        }
-
-        #connection-status span {
-            margin-left: 10px;
-        }
-
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            margin-left: -125px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 5px;
-            padding: 10px;
-            position: fixed;
-            z-index: 1;
-            left: 50%;
-            bottom: 30px;
-            font-size: 17px;
-            opacity: 0;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
     <!-- Monaco Editor CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
 </head>
 <body>
-    <div id="executor">
-        <h2>External Executor</h2>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="#"><img src="https://via.placeholder.com/24" alt="Home Icon"> Home</a>
+        <a href="#"><img src="https://via.placeholder.com/24" alt="Settings Icon"> Settings</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1>Welcome to Emu-EXEC</h1>
+            <p>Emu-EXEC is a powerful tool that lets you run code in your Android emulator without having to deal with its annoying user interface.</p>
+        </div>
+
+        <!-- Connection Status -->
+        <div id="connection-status">
+            <div class="status-dot"></div><span id="status-text">Not Connected</span>
+        </div>
+
+        <!-- Code Editor -->
         <div id="editor"></div>
-        <div id="controls">
+
+        <!-- Controls -->
+        <div class="button-container">
             <button class="clear" onclick="clearCode()">Clear</button>
             <button onclick="executeCode()">Execute</button>
         </div>
-        <div id="connection-status">
-            <div id="lamp">●</div><span id="status-text">Not Connected</span>
-        </div>
-        <div id="toast">Message goes here</div>
     </div>
 
     <script>
@@ -141,43 +154,12 @@
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function () {
             editor = monaco.editor.create(document.getElementById('editor'), {
-                value: "// Write your script here...",
-                language: 'javascript',
+                value: "print(\"Hello World\")",
+                language: 'python',
                 theme: 'vs-dark',
                 automaticLayout: true
             });
         });
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const encodedIP = urlParams.get('ip');
-
-        if (!encodedIP) {
-            document.body.innerHTML = '<h2>Invalid or missing IP address!</h2>';
-            throw new Error("No IP address provided.");
-        }
-
-        const decodedIP = atob(encodedIP);
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        function updateConnectionStatus(connected) {
-            const lamp = document.getElementById('lamp');
-            const statusText = document.getElementById('status-text');
-            if (connected) {
-                lamp.classList.add('connected');
-                statusText.textContent = 'Connected';
-                statusText.style.color = '#5cff5c'; 
-            } else {
-                lamp.classList.remove('connected');
-                statusText.textContent = 'Not Connected';
-                statusText.style.color = '#ff5c5c';
-            }
-        }
 
         function clearCode() {
             editor.setValue('');
@@ -186,40 +168,39 @@
         function executeCode() {
             const code = editor.getValue();
             if (code.trim() === '') {
-                showToast('Please enter some code to execute.');
+                alert('Please enter some code to execute.');
                 return;
             }
 
             if (!socket || socket.readyState !== WebSocket.OPEN) {
-                showToast('Not connected to server.');
+                alert('Not connected to server.');
                 return;
             }
 
-            showToast('Executing code...');
             socket.send(JSON.stringify({ script: code }));
         }
 
         function connectToWebSocket() {
-            socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+            socket = new WebSocket('ws://yourserver:7890/Execute');
 
             socket.onopen = function () {
-                updateConnectionStatus(true);
-                showToast('Connected to server!');
+                document.querySelector('.status-dot').style.backgroundColor = '#5cff5c'; // Connected (Green)
+                document.getElementById('status-text').textContent = 'Connected';
             };
 
             socket.onmessage = function (event) {
-                showToast('Script executed successfully!');
+                alert('Script executed successfully!');
             };
 
             socket.onerror = function (error) {
-                showToast('Error connecting to server.');
+                alert('Error connecting to server.');
                 console.error('WebSocket Error:', error);
             };
 
             socket.onclose = function () {
-                updateConnectionStatus(false);
+                document.querySelector('.status-dot').style.backgroundColor = 'red'; // Disconnected (Red)
+                document.getElementById('status-text').textContent = 'Not Connected';
                 console.log('WebSocket connection closed.');
-                showToast('Disconnected from server.');
             };
         }
 
