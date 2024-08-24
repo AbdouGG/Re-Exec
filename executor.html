@@ -52,6 +52,15 @@
         button:hover {
             opacity: 0.8;
         }
+        #output {
+            margin-top: 20px;
+            background-color: #1c1c1c;
+            color: #d4d4d4;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -66,6 +75,8 @@
     </div>
 
     <script>
+        let socket;
+
         // Get the base64-encoded IP from the URL
         const urlParams = new URLSearchParams(window.location.search);
         const encodedIP = urlParams.get('ip');
@@ -78,6 +89,39 @@
         // Decode the IP address
         const decodedIP = atob(encodedIP);
 
+        // Function to establish a WebSocket connection
+        function connectWebSocket() {
+            try {
+                socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+
+                socket.onopen = function () {
+                    console.log('Connected to the WebSocket server.');
+                    document.getElementById('output').textContent = 'Connected to the WebSocket server.\n';
+                };
+
+                socket.onmessage = function (event) {
+                    console.log('Message from server: ', event.data);
+                    document.getElementById('output').textContent += `Server: ${event.data}\n`;
+                };
+
+                socket.onerror = function (error) {
+                    console.error('WebSocket Error: ', error);
+                    alert('Error connecting to the server. Please check the server status or IP address.');
+                };
+
+                socket.onclose = function () {
+                    console.log('WebSocket connection closed.');
+                    document.getElementById('output').textContent += 'WebSocket connection closed.\n';
+                };
+            } catch (error) {
+                console.error('Failed to establish WebSocket connection: ', error);
+                document.getElementById('output').textContent = 'Failed to establish WebSocket connection.\n';
+            }
+        }
+
+        // Call connectWebSocket when the page loads
+        window.onload = connectWebSocket;
+
         function clearCode() {
             document.getElementById('codeEditor').value = '';
         }
@@ -89,25 +133,12 @@
                 return;
             }
 
-            // Establish WebSocket connection using the decoded IP
-            const socket = new WebSocket(`ws://${decodedIP}:7890/Console`);
-
-            socket.onopen = function () {
+            if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({ script: code }));
-            };
-
-            socket.onmessage = function (event) {
-                alert('Script executed successfully!');
-            };
-
-            socket.onerror = function (error) {
-                alert('Error connecting to server.');
-                console.error('WebSocket Error:', error);
-            };
-
-            socket.onclose = function () {
-                console.log('WebSocket connection closed.');
-            };
+                document.getElementById('output').textContent += `You: ${code}\n`;
+            } else {
+                alert('WebSocket connection is not open.');
+            }
         }
     </script>
 </body>
