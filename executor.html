@@ -90,7 +90,7 @@
             }
 
             // Establish WebSocket connection using the decoded IP
-            const socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+            const socket = new WebSocket(`ws://${decodedIP}:7890/Console`);
 
             socket.onopen = function () {
                 socket.send(JSON.stringify({ script: code }));
