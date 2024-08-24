@@ -122,40 +122,20 @@
         }
         #notification {
             display: none; /* Hidden by default */
-            background-color: #181818;
-            color: #e0e0e0;
-            padding: 15px;
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
             position: fixed;
             top: 20px;
             right: 20px;
-            border-radius: 8px;
+            border-radius: 5px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            max-width: 300px;
-            border: 1px solid #333; /* Border to match the image */
         }
-
         #notification.show {
             display: block;
             animation: fadein 0.5s, fadeout 0.5s 2.5s;
         }
-
-        #notification .title {
-            font-weight: 700; /* Bold title */
-            margin-bottom: 5px;
-        }
-
-        #notification .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: #e0e0e0;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
         @keyframes fadein {
             from {opacity: 0;}
             to {opacity: 1;}
@@ -194,11 +174,7 @@
     </div>
     
     <!-- Notification for feedback -->
-    <div id="notification">
-        <span class="title">Emu-Exec</span>
-        <span id="notification-message"></span>
-        <button class="close-btn" onclick="closeNotification()">×</button>
-    </div>
+    <div id="notification"></div>
 
     <script>
         let editor;
@@ -243,18 +219,11 @@
 
         function showNotification(message) {
             const notification = document.getElementById('notification');
-            const messageElement = document.getElementById('notification-message');
-            messageElement.textContent = message;
+            notification.textContent = message;
             notification.classList.add('show');
-            
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
-        }
-
-        function closeNotification() {
-            const notification = document.getElementById('notification');
-            notification.classList.remove('show');
         }
 
         function clearCode() {
@@ -273,49 +242,54 @@
                 return;
             }
 
-            socket.send(JSON.stringify({ command: "execute", code }));
-            showNotification('Code executed successfully.');
+            socket.send(JSON.stringify({ script: code }));
         }
 
-        // WebSocket connection
-        try {
-            socket = new WebSocket(`ws://${decodedIP}:7890`);
+        function connectToWebSocket() {
+            socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+
             socket.onopen = function () {
                 updateConnectionStatus(true);
-                showNotification('Successfully connected to the server');
+                showNotification('Connected to server.');
             };
+
+            socket.onmessage = function (event) {
+                showNotification('Script executed successfully!');
+            };
+
+            socket.onerror = function (error) {
+                showNotification('Error connecting to server.');
+                console.error('WebSocket Error:', error);
+            };
+
             socket.onclose = function () {
                 updateConnectionStatus(false);
-                showNotification('Disconnected from the server');
+                showNotification('Disconnected from server.');
+                console.log('WebSocket connection closed.');
             };
-            socket.onerror = function (error) {
-                console.error('WebSocket Error: ', error);
-                updateConnectionStatus(false);
-            };
-        } catch (error) {
-            console.error('WebSocket Connection Error: ', error);
-            updateConnectionStatus(false);
         }
 
         function goHome() {
-            // Implement home navigation
-            showNotification('Navigating to Home...');
+            showNotification('Home button clicked!');
+            // Implement home functionality
         }
 
         function openSettings() {
-            // Implement settings navigation
-            showNotification('Opening Settings...');
+            showNotification('Settings button clicked!');
+            // Implement settings functionality
         }
 
         function showHowToUse() {
-            // Implement how-to-use navigation
-            showNotification('Showing How to Use...');
+            showNotification('How to use clicked!');
+            // Implement how to use functionality
         }
 
         function joinDiscord() {
-            // Implement Discord joining
-            showNotification('Joining Discord...');
+            window.open('https://discord.com', '_blank');
         }
+
+        // Attempt to connect when the page loads
+        connectToWebSocket();
     </script>
 </body>
 </html>
