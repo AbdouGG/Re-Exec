@@ -1,47 +1,44 @@
 body {
+    margin-top: 60px;
     font-family: Arial, sans-serif;
-    background-color: #1a1a1a;
-    color: #fff;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-family: 'Roboto', sans-serif;
+    background-color: #1a1a1a; /* Dark gray background */
+    color: #ffffff; /* White text */
+    padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    height: 100vh;
     box-sizing: border-box;
 }
 
 .container {
-    background-color: #2c2c2c;
+    background-color: #333333; /* Darker gray for container background */
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    width: 500px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    width: 100%;
     max-width: 100%;
     text-align: center;
+    margin: auto;
 }
 
 .header {
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
     width: 100%;
-    background-color: #1f1f1f;
+    background-color: #2c2c2c; /* Medium gray background for header */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000; /* Ensures the header stays on top of other elements */
+    padding: 10px 1px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* Darker shadow for header */
+    z-index: 1000;
 }
 
 .header .logo {
     display: flex;
     align-items: center;
-    color: #ffffff;
+    color: #ffffff; /* White text for logo */
     font-size: 20px;
     font-weight: 700;
 }
@@ -59,9 +56,9 @@ body {
 
 .header .nav-buttons button {
     background-color: transparent;
-    border: 1px solid #444;
+    border: 1px solid #555555; /* Medium gray border */
     padding: 5px 15px;
-    color: #ffffff;
+    color: #ffffff; /* White text */
     margin-left: 10px;
     border-radius: 5px;
     font-size: 14px;
@@ -70,28 +67,31 @@ body {
 }
 
 .header .nav-buttons button:hover {
-    background-color: #333;
-    border-color: #666;
+    background-color: #444444; /* Slightly lighter gray on hover */
+    border-color: #777777; /* Lighter gray border on hover */
 }
 
 #executor {
-    width: 80%;
-    max-width: 800px;
-    background-color: #252526;
+    width: 100%;
+    max-width: 1200px;
+    background-color: #2c2c2c; /* Medium gray background for executor */
     padding: 25px;
     border-radius: 10px;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3);
-    margin-top: 20px;
+    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3); /* Darker shadow */
+    margin: 20px auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 h1, h2 {
     margin-top: 0;
-    color: #e0e0e0;
+    color: #ffffff; /* White text for headings */
 }
 
 p, ul {
     text-align: left;
-    color: #b3b3b3;
+    color: #cccccc; /* Light gray text for paragraphs and lists */
     margin-bottom: 20px;
 }
 
@@ -102,9 +102,9 @@ ul {
 
 #script-editor, #editor {
     width: 100%;
-    height: 200px;
-    background-color: #333;
-    color: #fff;
+    height: calc(100vh - 200px);
+    background-color: #1e1e1e; /* Dark gray for editor background */
+    color: #ffffff; /* White text in editor */
     border: none;
     border-radius: 4px;
     padding: 10px;
@@ -112,47 +112,54 @@ ul {
     font-size: 14px;
     margin-bottom: 15px;
     border: 1px solid #3e3e3e;
+    flex-grow: 1;
 }
 
-.button-container, #controls {
-    margin-top: 20px;
+#controls {
     display: flex;
     justify-content: space-between;
-    justify-content: flex-end;
     align-items: center;
+    margin-top: 1px;
+    padding: 10px 1px;
 }
 
 button {
-    background-color: #007bff;
+    background-color: #555555; /* Medium gray for buttons */
+    color: #ffffff; /* White text */
+    padding: 10px 15px;
     border: none;
-    padding: 10px 20px;
-    color: white;
-    border-radius: 4px;
+    border-radius: 5px;
+    font-size: 16px;
     cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
     margin-left: 10px;
-    transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #777777; /* Lighter gray on hover */
+    transform: translateY(-2px);
 }
 
-#clear-btn, button.clear {
-    background-color: #6c757d;
+button:active {
+    background-color: #333333; /* Darker gray when active */
+    transform: translateY(0);
 }
 
-#clear-btn:hover, button.clear:hover {
-    background-color: #5a6268;
-    background-color: #d9542b;
+button.clear {
+    background-color: #ff5c5c; /* Red color for clear button */
+    margin-left: 10px;
 }
 
-#status, #connection-status {
-    margin-top: 20px;
-    font-size: 14px;
-    color: #28a745;
+button.clear:hover {
+    background-color: #ff7c7c; /* Lighter red on hover */
+}
+
+#connection-status {
+    margin-left: auto;
     display: flex;
     align-items: center;
-    color: #ff5c5c; /* Default to red (disconnected) */
+    font-size: 16px;
+    color: #ff5c5c; /* Red for not connected */
 }
 
 #connection-status span {
@@ -160,19 +167,19 @@ button:hover {
 }
 
 .connected {
-    color: #5cff5c; /* Green when connected */
+    color: #5cff5c; /* Green for connected */
 }
 
 #notification {
-    display: none; /* Hidden by default */
-    background-color: #333;
-    color: #fff;
+    display: none;
+    background-color: #444444; /* Medium gray for notifications */
+    color: #ffffff; /* White text */
     padding: 10px;
     position: fixed;
     bottom: 20px;
     right: 20px;
     border-radius: 5px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
     z-index: 1000;
 }
 
@@ -190,3 +197,5 @@ button:hover {
     from {opacity: 1;}
     to {opacity: 0;}
 }
+
+
