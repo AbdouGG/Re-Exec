@@ -3,37 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emu-Exec | Code Execution Made Easy</title>
+    <title>External Executor</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <!-- Monaco Editor CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
 </head>
 <body>
-    <header class="header">
+    <div class="header">
         <div class="logo">
-            <img src="logo.png" alt="Emu-Exec Logo"> <span>Emu-Exec</span>
+            <img src="logo.png" alt="Logo"> Emu-Exec
         </div>
-        <nav class="nav-buttons">
+        <div class="nav-buttons">
             <button onclick="goHome()">Home</button>
             <button onclick="openSettings()">Settings</button>
-            <button onclick="showHowToUse()">How to Use</button>
+            <button onclick="showHowToUse()">How to use</button>
             <button onclick="joinDiscord()">Discord</button>
-        </nav>
-    </header>
-    
-    <main id="executor" class="container">
-        <h2>Welcome to Emu-Exec</h2>
-        <p>Emu-Exec is a powerful tool that lets you run code in your Android emulator without dealing with its complex UI.</p>
-        <div id="editor" class="editor"></div>
-        <div id="controls">
-            <button class="btn clear" onclick="clearCode()">Clear</button>
-            <button class="btn execute" onclick="executeCode()">Execute</button>
         </div>
-        <div id="connection-status" class="status">
+    </div>
+    <div id="executor">
+        <h2>Welcome to Emu-EXEC</h2>
+        <p>Emu-EXEC is a powerful tool that lets you run code in your Android emulator without having to deal with its annoying user interface.</p>
+        <div id="editor"></div>
+        <div id="controls">
+            <button class="clear" onclick="clearCode()">Clear</button>
+            <button onclick="executeCode()">Execute</button>
+        </div>
+        <div id="connection-status">
             <div id="lamp">●</div><span id="status-text">Not Connected</span>
         </div>
-    </main>
+    </div>
     
     <!-- Notification for feedback -->
     <div id="notification"></div>
