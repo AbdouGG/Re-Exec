@@ -22,15 +22,10 @@
             border-radius: 8px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
         }
-        #codeEditor {
+        #editor {
             width: 100%;
             height: 300px;
-            background-color: #1c1c1c;
-            color: #d4d4d4;
-            border: none;
-            padding: 10px;
             border-radius: 5px;
-            font-family: 'Courier New', Courier, monospace;
         }
         #controls {
             margin-top: 15px;
@@ -52,30 +47,49 @@
         button:hover {
             opacity: 0.8;
         }
-        #output {
-            margin-top: 20px;
-            background-color: #1c1c1c;
-            color: #d4d4d4;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: 'Courier New', Courier, monospace;
-            white-space: pre-wrap;
+        #connection-status {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            color: #ff5c5c; /* Default to red (disconnected) */
+        }
+        #connection-status span {
+            margin-left: 10px;
+        }
+        .connected {
+            color: #5cff5c; /* Green when connected */
         }
     </style>
+    <!-- Monaco Editor CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
 </head>
 <body>
     <div id="executor">
         <h2>External Executor</h2>
-        <textarea id="codeEditor" placeholder="Write your script here..."></textarea>
+        <div id="editor"></div>
         <div id="controls">
             <button class="clear" onclick="clearCode()">Clear</button>
             <button onclick="executeCode()">Execute</button>
         </div>
-        <div id="output"></div>
+        <div id="connection-status">
+            <div id="lamp">●</div><span id="status-text">Not Connected</span>
+        </div>
     </div>
 
     <script>
+        let editor;
         let socket;
+
+        // Load Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
+        require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('editor'), {
+                value: "// Write your script here...",
+                language: 'javascript',
+                theme: 'vs-dark',
+                automaticLayout: true
+            });
+        });
 
         // Get the base64-encoded IP from the URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -89,57 +103,61 @@
         // Decode the IP address
         const decodedIP = atob(encodedIP);
 
-        // Function to establish a WebSocket connection
-        function connectWebSocket() {
-            try {
-                socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
-
-                socket.onopen = function () {
-                    console.log('Connected to the WebSocket server.');
-                    document.getElementById('output').textContent = 'Connected to the WebSocket server.\n';
-                };
-
-                socket.onmessage = function (event) {
-                    console.log('Message from server: ', event.data);
-                    document.getElementById('output').textContent += `Server: ${event.data}\n`;
-                };
-
-                socket.onerror = function (error) {
-                    console.error('WebSocket Error: ', error);
-                    alert('Error connecting to the server. Please check the server status or IP address.');
-                };
-
-                socket.onclose = function () {
-                    console.log('WebSocket connection closed.');
-                    document.getElementById('output').textContent += 'WebSocket connection closed.\n';
-                };
-            } catch (error) {
-                console.error('Failed to establish WebSocket connection: ', error);
-                document.getElementById('output').textContent = 'Failed to establish WebSocket connection.\n';
+        function updateConnectionStatus(connected) {
+            const lamp = document.getElementById('lamp');
+            const statusText = document.getElementById('status-text');
+            if (connected) {
+                lamp.classList.add('connected');
+                statusText.textContent = 'Connected';
+            } else {
+                lamp.classList.remove('connected');
+                statusText.textContent = 'Not Connected';
             }
         }
 
-        // Call connectWebSocket when the page loads
-        window.onload = connectWebSocket;
-
         function clearCode() {
-            document.getElementById('codeEditor').value = '';
+            editor.setValue('');
         }
 
         function executeCode() {
-            const code = document.getElementById('codeEditor').value;
+            const code = editor.getValue();
             if (code.trim() === '') {
                 alert('Please enter some code to execute.');
                 return;
             }
 
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({ script: code }));
-                document.getElementById('output').textContent += `You: ${code}\n`;
-            } else {
-                alert('WebSocket connection is not open.');
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                alert('Not connected to server.');
+                return;
             }
+
+            socket.send(JSON.stringify({ script: code }));
         }
+
+        function connectToWebSocket() {
+            socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+
+            socket.onopen = function () {
+                updateConnectionStatus(true);
+            };
+
+            socket.onmessage = function (event) {
+                alert('Script executed successfully!');
+            };
+
+            socket.onerror = function (error) {
+                alert('Error connecting to server.');
+                console.error('WebSocket Error:', error);
+            };
+
+            socket.onclose = function () {
+                updateConnectionStatus(false);
+                console.log('WebSocket connection closed.');
+            };
+        }
+
+        // Attempt to connect when the page loads
+        connectToWebSocket();
     </script>
 </body>
 </html>
