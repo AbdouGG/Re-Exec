@@ -1,0 +1,6 @@
+{
+    "rewrites": [
+      { "source": "/executor", "destination": "/executor.html" }
+    ]
+  }
+  
