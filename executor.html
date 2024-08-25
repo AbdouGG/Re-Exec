@@ -83,6 +83,7 @@
             padding: 2rem;
             display: flex;
             gap: 2rem;
+            position: relative;
         }
 
         .editor-container {
@@ -93,6 +94,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
+            transition: width 0.3s ease-in-out;
         }
 
         .editor-header {
@@ -194,6 +196,10 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            transition: transform 0.3s ease-in-out;
+        }
+        .workspace.hidden {
+            transform: translateX(100%);
         }
 
         .workspace h3 {
@@ -228,6 +234,37 @@
             color: var(--text-color);
             width: 100%;
             margin-bottom: 0.5rem;
+        }
+
+        .toggle-workspace {
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            width: 30px;
+            height: 60px;
+            border-radius: 15px 0 0 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .toggle-workspace:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .toggle-workspace i {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-workspace.workspace-hidden i {
+            transform: rotate(180deg);
         }
 
         @media (max-width: 768px) {
@@ -282,6 +319,9 @@
             <button onclick="saveScript()"><i class="fas fa-save"></i> Save Script</button>
             <ul id="scriptList"></ul>
         </div>
+        <button id="toggle-workspace" class="toggle-workspace">
+        <i class="fas fa-chevron-left"></i>
+            </button>
         <div class="connection-status" id="connection-status">
             <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
         </div>
@@ -417,6 +457,35 @@
             document.getElementById('scriptName').value = name;
             showNotification(`Loaded script: ${name}`);
         }
+
+        // Add this to your existing JavaScript
+        let workspaceHidden = false;
+
+        function toggleWorkspace() {
+            const workspace = document.getElementById('workspace');
+            const editorContainer = document.querySelector('.editor-container');
+            const toggleButton = document.getElementById('toggle-workspace');
+            
+            workspaceHidden = !workspaceHidden;
+            
+            if (workspaceHidden) {
+                workspace.classList.add('hidden');
+                editorContainer.style.width = 'calc(100% - 30px)';
+                toggleButton.classList.add('workspace-hidden');
+            } else {
+                workspace.classList.remove('hidden');
+                editorContainer.style.width = '';
+                toggleButton.classList.remove('workspace-hidden');
+            }
+            
+            // Trigger a layout update for the Monaco editor
+            if (editor) {
+                editor.layout();
+            }
+        }
+
+        // Add this line after your existing event listeners
+        document.getElementById('toggle-workspace').addEventListener('click', toggleWorkspace);
 
         function goHome() {
             showNotification('Home functionality not implemented');
