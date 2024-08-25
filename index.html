@@ -333,24 +333,18 @@
     -->
 
     <script>
-    // Extract the IP from the current URL path
-    const urlSegments = window.location.pathname.split('/');
-    
-    // Ensure the structure is correct and the IP is present
-    if (urlSegments.length >= 3 && urlSegments[1] === 'executor') {
-        const encodedIP = urlSegments[2];
-        
-        // Proceed with whatever logic you need using the encodedIP
-        console.log("Encoded IP:", encodedIP);
-        
-        // For example, you could redirect again, or handle this encoded IP as needed
-        // For demonstration, let's just output it to the console
-    } else {
-        // Handle the case where the IP is not provided correctly
-        document.body.innerHTML = "<p style='color: red;'>To access the executor, please use the provided server link with the Base64 encoded IP.</p>";
-    }
-</script>
+        // Extract the IP from the URL path
+        const urlSegments = window.location.pathname.split('/');
+        const encodedIP = urlSegments[2]; // 'executor' is index 1, 'ip' is index 2
 
+        if (encodedIP) {
+            // Proceed with the IP handling as needed
+            window.location.href = `executor?ip=${encodedIP}`;
+        } else {
+            document.getElementById('redirect-message').textContent = "To access the executor, please use the provided server link with the Base64 encoded IP.";
+        }
+
+    </script>
 
     <footer class="footer">
         <p>&copy; 2024 Re-Exec. All Rights Reserved. <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
