@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,213 +8,202 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/944246656646402049/1276988049082810430/Re.png?ex=66cb874c&is=66ca35cc&hm=337b2915d2b996f85fd6bc9cf2f3d82e883cdbfe3caf7082121e4dcd55540eff&">
     <style>
-        body {
-            margin-top: 60px;
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a; /* Dark gray background */
-            color: #ffffff; /* White text */
+        /* Basic reset */
+        * {
+            margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
             box-sizing: border-box;
         }
 
-        .container {
-            background-color: #333333; /* Darker gray for container background */
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 100%;
-            text-align: center;
-            margin: auto;
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
         }
 
         .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #2c2c2c; /* Medium gray background for header */
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 1px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* Darker shadow for header */
-            z-index: 1000;
+            background-color: #1e1e1e;
+            padding: 15px 20px;
         }
 
-        .header .logo {
-            display: flex;
-            align-items: center;
-            color: #ffffff; /* White text for logo */
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .header .logo img {
-            width: 30px;
-            height: 30px;
+        .logo img {
+            height: 40px;
             margin-right: 10px;
         }
 
-        .header .nav-buttons {
+        .logo {
             display: flex;
             align-items: center;
+            font-size: 24px;
+            font-weight: 500;
+            color: #ffffff;
         }
 
-        .header .nav-buttons button {
-            background-color: transparent;
-            border: 1px solid #555555; /* Medium gray border */
-            padding: 5px 15px;
-            color: #ffffff; /* White text */
+        .nav-buttons button {
+            background-color: #2c2c2c;
+            border: none;
+            color: #ffffff;
+            padding: 10px 20px;
             margin-left: 10px;
-            border-radius: 5px;
-            font-size: 14px;
             cursor: pointer;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+            transition: background-color 0.3s;
+            border-radius: 5px;
         }
 
-        .header .nav-buttons button:hover {
-            background-color: #444444; /* Slightly lighter gray on hover */
-            border-color: #777777; /* Lighter gray border on hover */
+        .nav-buttons button:hover {
+            background-color: #444444;
         }
 
         #executor {
-            width: 100%;
-            max-width: 1200px;
-            background-color: #2c2c2c; /* Medium gray background for executor */
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.3); /* Darker shadow */
-            margin: 20px auto;
-            flex-grow: 1;
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
-        h1, h2 {
-            margin-top: 0;
-            color: #ffffff; /* White text for headings */
-        }
-
-        p, ul {
-            text-align: left;
-            color: #cccccc; /* Light gray text for paragraphs and lists */
+        h2 {
+            font-size: 24px;
             margin-bottom: 10px;
         }
 
-        ul {
-            list-style-type: disc;
-            margin-left: 20px;
+        p {
+            font-size: 16px;
+            color: #aaaaaa;
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        #script-editor, #editor {
+        #editor {
             width: 100%;
-            height: calc(100vh - 200px);
-            background-color: #1e1e1e; /* Dark gray for editor background */
-            color: #ffffff; /* White text in editor */
-            border: none;
-            border-radius: 4px;
-            padding: 10px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            margin-bottom: 15px;
-            border: 1px solid #3e3e3e;
-            flex-grow: 1;
+            height: 300px;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            border: 1px solid #444444;
         }
 
         #controls {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 1px;
-            padding: 10px 1px;
+            margin-top: 10px;
+            width: 100%;
         }
 
-        button {
-            background-color: #555555; /* Medium gray for buttons */
-            color: #ffffff; /* White text */
-            padding: 10px 15px;
+        #controls button {
+            background-color: #007bff;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            color: #ffffff;
+            padding: 10px 20px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-left: 10px;
+            transition: background-color 0.3s;
+            border-radius: 5px;
         }
 
-        button:hover {
-            background-color: #777777; /* Lighter gray on hover */
-            transform: translateY(-2px);
+        #controls button.clear {
+            background-color: #ff5c5c;
         }
 
-        button:active {
-            background-color: #333333; /* Darker gray when active */
-            transform: translateY(0);
+        #controls button:hover {
+            background-color: #0056b3;
         }
 
-        button.clear {
-            background-color: #ff5c5c; /* Red color for clear button */
-            margin-left: 10px;
-        }
-
-        button.clear:hover {
-            background-color: #ff7c7c; /* Lighter red on hover */
+        #controls button.clear:hover {
+            background-color: #d9534f;
         }
 
         #connection-status {
-            margin-left: auto;
             display: flex;
             align-items: center;
-            font-size: 16px;
-            font-weight: bold;
-            color: #ff5c5c; /* Red for not connected */
         }
 
-        #connection-status span {
-            margin-left: 10px;
+        #lamp {
+            height: 10px;
+            width: 10px;
+            background-color: #ff5c5c;
+            border-radius: 50%;
+            margin-right: 5px;
         }
 
-        .connected {
-            color: #5cff5c; /* Green for connected */
+        #lamp.connected {
+            background-color: #5cff5c;
         }
 
         #notification {
-            display: none;
-            background-color: #444444; /* Medium gray for notifications */
-            color: #ffffff; /* White text */
-            padding: 10px;
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px 20px;
             border-radius: 5px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
+            display: none;
             z-index: 1000;
         }
 
         #notification.show {
             display: block;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
         }
 
-        @keyframes fadein {
-            from {opacity: 0;}
-            to {opacity: 1;}
+        /* Workspace styles */
+        #workspace {
+            display: flex;
+            flex-direction: column;
+            max-width: 200px;
+            background-color: #2c2c2c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-right: 15px;
+            overflow-y: auto;
         }
 
-        @keyframes fadeout {
-            from {opacity: 1;}
-            to {opacity: 0;}
+        #workspace h3 {
+            margin: 0 0 10px;
+            color: #ffffff;
+            font-size: 18px;
         }
 
+        #workspace ul {
+            list-style-type: none;
+            padding: 0;
+        }
 
+        #workspace ul li {
+            margin-bottom: 5px;
+            cursor: pointer;
+            color: #ffffff;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
 
+        #workspace ul li:hover {
+            background-color: #444444;
+        }
+
+        /* Console log styles */
+        #console {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
     </style>
     <!-- Monaco Editor CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
 </head>
+
 <body>
     <div class="header">
         <div class="logo">
@@ -228,29 +218,43 @@
     </div>
 
     <div id="executor">
-        <h2>Welcome to Re-Exec</h2>
-        <p>Re-Exec is a powerful tool that lets you run code in your Android emulator without open any mobile executor.</p>
+        <div style="display: flex;">
+            <!-- Workspace Folders -->
+            <div id="workspace">
+                <h3>Workspace</h3>
+                <ul id="file-list"></ul>
+                <button onclick="createNewFile()">New File</button>
+            </div>
 
-        <!-- Controls container now above the editor -->
-        <div id="controls">
-            <button onclick="executeCode()">Execute</button>
-            <button class="clear" onclick="clearCode()">Clear</button>
-            <div id="connection-status">
-                <div id="lamp">●</div><span id="status-text">Not Connected</span>
+            <!-- Editor container -->
+            <div style="flex-grow: 1;">
+                <h2>Welcome to Re-Exec</h2>
+                <p>Re-Exec is a powerful tool that lets you run code in your Android emulator without opening any mobile executor.</p>
+
+                <!-- Controls container now above the editor -->
+                <div id="controls">
+                    <button onclick="executeCode()">Execute</button>
+                    <button class="clear" onclick="clearCode()">Clear</button>
+                    <div id="connection-status">
+                        <div id="lamp">●</div><span id="status-text">Not Connected</span>
+                    </div>
+                </div>
+
+                <div id="editor"></div>
+
+                <!-- Console log -->
+                <div id="console"></div>
             </div>
         </div>
-        
-
-        <!-- Editor container -->
-        <div id="editor"></div>
     </div>
-    
+
     <!-- Notification for feedback -->
     <div id="notification"></div>
 
     <script>
         let editor;
         let socket;
+        let workspace = {};
 
         // Load Monaco Editor
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
@@ -261,6 +265,13 @@
                 theme: 'vs-dark',
                 automaticLayout: true
             });
+
+            // Load the last session's code
+            const savedCode = localStorage.getItem('autoExecuteCode');
+            if (savedCode) {
+                editor.setValue(savedCode);
+                executeCode(); // Auto-execute the loaded code
+            }
         });
 
         // Get the base64-encoded IP from the URL
@@ -289,6 +300,52 @@
             }
         }
 
+        function connectToWebSocket() {
+            socket = new WebSocket('ws://' + decodedIP + ':3000');
+            socket.onopen = function () {
+                updateConnectionStatus(true);
+                showNotification('Connected to server!');
+            };
+
+            socket.onclose = function () {
+                updateConnectionStatus(false);
+                showNotification('Disconnected from server!');
+            };
+
+            socket.onmessage = function (event) {
+                const logMessage = `[Server] ${event.data}`;
+                addConsoleLog(logMessage);
+            };
+
+            socket.onerror = function () {
+                updateConnectionStatus(false);
+                showNotification('Connection error!');
+            };
+        }
+
+        function executeCode() {
+            const code = editor.getValue();
+
+            if (!code) {
+                showNotification('Please enter some code to execute.');
+                return;
+            }
+
+            // Store the code for auto-execution
+            localStorage.setItem('autoExecuteCode', code);
+
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(code);
+                addConsoleLog(`[Executed] ${code}`);
+            } else {
+                showNotification('Not connected to the server.');
+            }
+        }
+
+        function clearCode() {
+            editor.setValue('');
+        }
+
         function showNotification(message) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -298,70 +355,45 @@
             }, 3000);
         }
 
-        function clearCode() {
-            editor.setValue('');
+        // Add logs to the console
+        function addConsoleLog(message) {
+            const consoleLog = document.getElementById('console');
+            consoleLog.textContent += message + '\n';
+            consoleLog.scrollTop = consoleLog.scrollHeight; // Auto-scroll to the bottom
         }
 
-        function executeCode() {
-            const code = editor.getValue();
-            if (code.trim() === '') {
-                showNotification('Please enter some code to execute.');
-                return;
+        // Workspace functions
+        function createNewFile() {
+            const fileName = prompt("Enter file name:");
+            if (fileName) {
+                workspace[fileName] = "";
+                updateFileList();
             }
+        }
 
-            if (!socket || socket.readyState !== WebSocket.OPEN) {
-                showNotification('Not connected to server.');
-                return;
+        function updateFileList() {
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = '';
+            for (const file in workspace) {
+                const li = document.createElement('li');
+                li.textContent = file;
+                li.onclick = () => loadFile(file);
+                fileList.appendChild(li);
             }
-
-            socket.send(code);
         }
 
-        function connectToWebSocket() {
-            socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
-
-            socket.onopen = function () {
-                updateConnectionStatus(true);
-                showNotification('Connected to server.');
-            };
-
-            socket.onmessage = function (event) {
-                showNotification('Script executed successfully!');
-            };
-
-            socket.onerror = function (error) {
-                showNotification('Error connecting to server.');
-                console.error('WebSocket Error:', error);
-            };
-
-            socket.onclose = function () {
-                updateConnectionStatus(false);
-                showNotification('Disconnected from server.');
-                console.log('WebSocket connection closed.');
-            };
+        function loadFile(fileName) {
+            if (workspace[fileName] !== undefined) {
+                editor.setValue(workspace[fileName]);
+                showNotification(`Loaded file: ${fileName}`);
+            }
         }
 
-        function goHome() {
-            showNotification('Home button clicked!');
-            // Implement home functionality
-        }
-
-        function openSettings() {
-            showNotification('Settings button clicked!');
-            // Implement settings functionality
-        }
-
-        function showHowToUse() {
-            showNotification('How to use clicked!');
-            // Implement how to use functionality
-        }
-
-        function joinDiscord() {
-            window.open('https://discord.com', '_blank');
-        }
-
-        // Attempt to connect when the page loads
-        connectToWebSocket();
+        // Connect to WebSocket on load
+        window.onload = function () {
+            connectToWebSocket();
+        };
     </script>
 </body>
+
 </html>
