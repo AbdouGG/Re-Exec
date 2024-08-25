@@ -339,7 +339,7 @@
             
         if (encodedIP) {
             // Redirect to the executor page if 'ip' is present
-            window.location.href = `executor?ip=${encodedIP}`;
+            window.location.href = `executor/${encodedIP}`;
         } else {
             document.getElementById('redirect-message').textContent = "To access the executor, please use the provided server link with the Base64 encoded IP.";
         }
