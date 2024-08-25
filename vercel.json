@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/executor", "destination": "/executor.html" }
+    { "source": "/executor/:ip", "destination": "/executor.html" }
   ]
 }
