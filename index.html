@@ -336,13 +336,22 @@
         // Extract the IP from the URL path
         const urlSegments = window.location.pathname.split('/');
         const encodedIP = urlSegments[2]; // 'executor' is index 1, 'ip' is index 2
-
+        
         if (encodedIP) {
-            // Proceed with the IP handling as needed
-            window.location.href = `executor?ip=${encodedIP}`;
+            try {
+                // Decode the Base64 encoded IP
+                const decodedIP = atob(encodedIP);
+                // Proceed with the IP handling as needed, possibly store or use it on the page
+                console.log(`Decoded IP: ${decodedIP}`);
+                // Implement any functionality that should happen with the decoded IP
+            } catch (e) {
+                // Handle decoding error
+                document.getElementById('redirect-message').textContent = "Invalid IP format. Please use a valid Base64 encoded IP.";
+            }
         } else {
             document.getElementById('redirect-message').textContent = "To access the executor, please use the provided server link with the Base64 encoded IP.";
         }
+
 
     </script>
 
