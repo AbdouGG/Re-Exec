@@ -6,7 +6,7 @@
     <title>Re-Exec Ultra</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
+    <style> 
         :root {
             --bg-color: #0f0f1a;
             --primary-color: #00a8ff;
@@ -151,8 +151,6 @@
             color: var(--text-color);
             font-weight: 500;
             transition: all 0.3s ease;
-            align-self: flex-start;
-            margin-top: 1rem;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
@@ -196,7 +194,8 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            transition: all 0.3s ease;
+            transition: width 0.3s ease;
+            overflow: hidden;
         }
 
         .workspace h3 {
@@ -278,6 +277,9 @@
             <button onclick="showHowToUse()"><i class="fas fa-question-circle"></i> How to use</button>
             <button onclick="joinDiscord()"><i class="fab fa-discord"></i> Discord</button>
         </nav>
+        <div class="connection-status" id="connection-status">
+            <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
+        </div>
     </header>
 
     <main class="main-content">
@@ -297,9 +299,6 @@
             <input type="text" id="scriptName" placeholder="Script name">
             <button onclick="saveScript()"><i class="fas fa-save"></i> Save Script</button>
             <ul id="scriptList"></ul>
-        </div>
-        <div class="connection-status" id="connection-status">
-            <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
         </div>
     </main>
 
@@ -455,20 +454,24 @@
             const editorContainer = document.querySelector('.editor-container');
             const toggleBtn = document.getElementById('toggleWorkspaceBtn');
 
-            if (workspace.style.display === 'none') {
-                workspace.style.display = 'flex';
-                editorContainer.style.width = 'calc(100% - 270px)'; // Adjust based on your workspace width
+            workspace.style.transition = 'width 0.3s ease-in-out';
+            editorContainer.style.transition = 'width 0.3s ease-in-out';
+
+            if (workspace.style.width === '0px' || workspace.style.width === '') {
+                workspace.style.width = '250px';
+                editorContainer.style.width = 'calc(100% - 270px)';
                 toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Hide Workspace';
             } else {
-                workspace.style.display = 'none';
+                workspace.style.width = '0px';
                 editorContainer.style.width = '100%';
                 toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Show Workspace';
             }
 
-            // Trigger Monaco editor layout update
-            if (editor) {
-                editor.layout();
-            }
+            setTimeout(() => {
+                if (editor) {
+                    editor.layout();
+                }
+            }, 300);
         }
 
         connectToWebSocket();
