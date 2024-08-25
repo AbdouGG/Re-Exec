@@ -83,7 +83,6 @@
             padding: 2rem;
             display: flex;
             gap: 2rem;
-            position: relative;
         }
 
         .editor-container {
@@ -94,7 +93,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
-            transition: width 0.3s ease-in-out;
+            transition: all 0.3s ease;
         }
 
         .editor-header {
@@ -196,10 +195,13 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            transition: transform 0.3s ease-in-out;
+            transition: all 0.3s ease;
         }
+
         .workspace.hidden {
-            transform: translateX(100%);
+            width: 0;
+            padding: 0;
+            overflow: hidden;
         }
 
         .workspace h3 {
@@ -236,35 +238,23 @@
             margin-bottom: 0.5rem;
         }
 
-        .toggle-workspace {
-            position: absolute;
-            right: 2rem;
+        #toggleWorkspace {
+            position: fixed;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
             background-color: var(--primary-color);
             color: var(--text-color);
             border: none;
-            width: 30px;
-            height: 60px;
-            border-radius: 15px 0 0 15px;
+            padding: 0.6rem;
+            border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
+            z-index: 1000;
         }
 
-        .toggle-workspace:hover {
+        #toggleWorkspace:hover {
             background-color: var(--secondary-color);
-        }
-
-        .toggle-workspace i {
-            transition: transform 0.3s ease;
-        }
-
-        .toggle-workspace.workspace-hidden i {
-            transform: rotate(180deg);
         }
 
         @media (max-width: 768px) {
@@ -297,213 +287,159 @@
         <nav class="nav-buttons">
             <button onclick="goHome()"><i class="fas fa-home"></i> Home</button>
             <button onclick="openSettings()"><i class="fas fa-cog"></i> Settings</button>
-            <button onclick="showHowToUse()"><i class="fas fa-question-circle"></i> How to use</button>
-            <button onclick="joinDiscord()"><i class="fab fa-discord"></i> Discord</button>
+            <button onclick="showHowToUse()"><i class="fas fa-question-circle"></i> How to Use</button>
         </nav>
     </header>
 
-    <main class="main-content">
+    <div class="main-content">
         <div class="editor-container">
             <div class="editor-header">
-                <span class="editor-title">Code Editor</span>
+                <span class="editor-title">Script Editor</span>
                 <div class="editor-controls">
-                    <button onclick="executeCode()"><i class="fas fa-play"></i> Execute</button>
-                    <button onclick="clearCode()"><i class="fas fa-trash"></i> Clear</button>
+                    <button onclick="saveScript()"><i class="fas fa-save"></i> Save</button>
+                    <button onclick="runScript()"><i class="fas fa-play"></i> Run</button>
                 </div>
             </div>
-            <div id="editor"></div>
+            <textarea id="editor"></textarea>
         </div>
-        <div class="workspace">
-            <h3>Workspace</h3>
-            <input type="text" id="scriptName" placeholder="Script name">
-            <button onclick="saveScript()"><i class="fas fa-save"></i> Save Script</button>
+        <div class="workspace" id="workspace">
+            <h3>Your Scripts</h3>
+            <input type="text" id="scriptName" placeholder="Enter script name">
             <ul id="scriptList"></ul>
+            <button onclick="createNewScript()">Create New Script</button>
         </div>
-        <button id="toggle-workspace" class="toggle-workspace">
-        <i class="fas fa-chevron-left"></i>
-            </button>
-        <div class="connection-status" id="connection-status">
-            <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
-        </div>
-    </main>
+    </div>
+
+    <button id="toggleWorkspace" onclick="toggleWorkspace()"><i class="fas fa-chevron-left" id="toggleIcon"></i></button>
 
     <div id="notification"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
     <script>
-        let editor;
         let socket;
+        let isConnected = false;
+        let workspaceHidden = false;
+        const scripts = {};
 
-        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
-        require(['vs/editor/editor.main'], function() {
-            editor = monaco.editor.create(document.getElementById('editor'), {
-                value: "-- Welcome to Re-Exec Ultra\n-- Start coding here...",
-                language: 'lua',
-                theme: 'vs-dark',
-                automaticLayout: true
-            });
-            loadScripts();
-        });
-
-        const pathParts = window.location.pathname.split('/');
-        const encodedIP = pathParts[2];
-
-        if (!encodedIP) {
-            document.body.innerHTML = '<h2>Invalid or missing IP address!</h2>';
-            throw new Error("No IP address provided.");
+        function goHome() {
+            showNotification('Navigating to Home');
         }
 
-        const decodedIP = atob(encodedIP);
+        function openSettings() {
+            showNotification('Opening Settings');
+        }
 
-        function updateConnectionStatus(connected) {
-            const statusElement = document.getElementById('connection-status');
-            const statusText = document.getElementById('status-text');
-            if (connected) {
-                statusElement.classList.add('connected');
-                statusText.textContent = 'Connected';
-            } else {
-                statusElement.classList.remove('connected');
-                statusText.textContent = 'Not Connected';
-            }
+        function showHowToUse() {
+            showNotification('Showing How to Use');
         }
 
         function showNotification(message) {
             const notification = document.getElementById('notification');
-            notification.textContent = message;
+            notification.innerText = message;
             notification.style.display = 'block';
             setTimeout(() => {
                 notification.style.display = 'none';
             }, 3000);
         }
 
-        function clearCode() {
-            editor.setValue('');
-            showNotification('Code cleared');
-        }
-
-        function executeCode() {
-            const code = editor.getValue();
-            if (code.trim() === '') {
-                showNotification('Please enter some code to execute.');
-                return;
-            }
-
-            if (!socket || socket.readyState !== WebSocket.OPEN) {
-                showNotification('Not connected to server.');
-                return;
-            }
-
-            socket.send(code);
-            showNotification('Executing code...');
-        }
-
         function connectToWebSocket() {
-            const token = "AbdouGG";
-            socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
-
-            socket.onopen = function() {
-                updateConnectionStatus(true);
-                showNotification('Connected to server');
+            socket = new WebSocket('ws://your-websocket-url');
+            socket.onopen = function () {
+                isConnected = true;
+                updateConnectionStatus();
+                showNotification('Connected to the WebSocket server.');
             };
-
-            socket.onmessage = function(event) {
-                showNotification('Script executed successfully!');
+            socket.onmessage = function (event) {
+                console.log('Message from server:', event.data);
             };
-
-            socket.onerror = function(error) {
-                showNotification('Error connecting to server');
-                console.error('WebSocket Error:', error);
+            socket.onclose = function () {
+                isConnected = false;
+                updateConnectionStatus();
+                showNotification('Disconnected from the WebSocket server.');
             };
-
-            socket.onclose = function() {
-                updateConnectionStatus(false);
-                showNotification('Disconnected from server');
-                console.log('WebSocket connection closed');
+            socket.onerror = function (error) {
+                console.error('WebSocket error:', error);
+                showNotification('WebSocket error occurred.');
             };
+        }
+
+        function updateConnectionStatus() {
+            const status = document.createElement('div');
+            status.className = 'connection-status';
+            status.innerHTML = isConnected ? '<i class="fas fa-check-circle"></i> Connected' : '<i class="fas fa-times-circle"></i> Disconnected';
+            document.body.appendChild(status);
+            setTimeout(() => {
+                status.remove();
+            }, 3000);
         }
 
         function saveScript() {
             const scriptName = document.getElementById('scriptName').value.trim();
-            const scriptContent = editor.getValue();
-            
-            if (!scriptName) {
-                showNotification('Please enter a script name');
-                return;
+            const scriptContent = document.getElementById('editor').value;
+            if (scriptName) {
+                scripts[scriptName] = scriptContent;
+                updateScriptList();
+                showNotification(`Script "${scriptName}" saved.`);
+            } else {
+                showNotification('Please enter a script name.');
             }
-
-            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-            scripts[scriptName] = scriptContent;
-            localStorage.setItem('scripts', JSON.stringify(scripts));
-            
-            showNotification('Script saved successfully');
-            loadScripts();
         }
 
-        function loadScripts() {
+        function runScript() {
+            const scriptContent = document.getElementById('editor').value;
+            if (isConnected && scriptContent) {
+                socket.send(scriptContent);
+                showNotification('Script sent to server.');
+            } else {
+                showNotification('Not connected or script is empty.');
+            }
+        }
+
+        function updateScriptList() {
             const scriptList = document.getElementById('scriptList');
             scriptList.innerHTML = '';
-            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-            
-            for (const [name, content] of Object.entries(scripts)) {
+            for (const scriptName in scripts) {
                 const li = document.createElement('li');
-                li.textContent = name;
-                li.onclick = () => loadScript(name, content);
+                li.textContent = scriptName;
+                li.onclick = () => loadScript(scriptName);
                 scriptList.appendChild(li);
             }
         }
 
-        function loadScript(name, content) {
-            editor.setValue(content);
-            document.getElementById('scriptName').value = name;
-            showNotification(`Loaded script: ${name}`);
+        function loadScript(scriptName) {
+            document.getElementById('editor').value = scripts[scriptName];
+            document.getElementById('scriptName').value = scriptName;
+            showNotification(`Script "${scriptName}" loaded.`);
         }
 
-        // Add this to your existing JavaScript
-        let workspaceHidden = false;
+        function createNewScript() {
+            document.getElementById('scriptName').value = '';
+            document.getElementById('editor').value = '';
+            showNotification('New script editor opened.');
+        }
 
         function toggleWorkspace() {
             const workspace = document.getElementById('workspace');
             const editorContainer = document.querySelector('.editor-container');
-            const toggleButton = document.getElementById('toggle-workspace');
-            
-            workspaceHidden = !workspaceHidden;
-            
+            const toggleIcon = document.getElementById('toggleIcon');
+
             if (workspaceHidden) {
-                workspace.classList.add('hidden');
-                editorContainer.style.width = 'calc(100% - 30px)';
-                toggleButton.classList.add('workspace-hidden');
-            } else {
                 workspace.classList.remove('hidden');
-                editorContainer.style.width = '';
-                toggleButton.classList.remove('workspace-hidden');
+                editorContainer.style.marginRight = '0';
+                toggleIcon.classList.remove('fa-chevron-right');
+                toggleIcon.classList.add('fa-chevron-left');
+            } else {
+                workspace.classList.add('hidden');
+                editorContainer.style.marginRight = '-250px'; // Adjust the margin to hide the workspace
+                toggleIcon.classList.remove('fa-chevron-left');
+                toggleIcon.classList.add('fa-chevron-right');
             }
-            
-            // Trigger a layout update for the Monaco editor
-            if (editor) {
-                editor.layout();
-            }
+
+            workspaceHidden = !workspaceHidden;
         }
 
-        // Add this line after your existing event listeners
-        document.getElementById('toggle-workspace').addEventListener('click', toggleWorkspace);
-
-        function goHome() {
-            showNotification('Home functionality not implemented');
-        }
-
-        function openSettings() {
-            showNotification('Settings functionality not implemented');
-        }
-
-        function showHowToUse() {
-            showNotification('How to use functionality not implemented');
-        }
-
-        function joinDiscord() {
-            window.open('https://discord.com', '_blank');
-        }
-
-        connectToWebSocket();
+        window.onload = function() {
+            connectToWebSocket();
+        };
     </script>
 </body>
 </html>
