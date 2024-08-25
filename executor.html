@@ -307,7 +307,8 @@
         }
 
         function setupWebSocket() {
-            socket = new WebSocket('ws://' + decodedIP + ':3000');
+            const token = "AbdouGG";
+            socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
             socket.onopen = () => {
                 updateConnectionStatus(true);
