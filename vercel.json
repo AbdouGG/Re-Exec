@@ -1,8 +1,5 @@
 {
   "rewrites": [
-    {
-      "source": "/executor/:ip",
-      "destination": "/executor.html"
-    }
+    { "source": "/executor", "destination": "/executor.html" }
   ]
 }
