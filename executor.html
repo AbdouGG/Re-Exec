@@ -6,7 +6,7 @@
     <title>Re-Exec Ultra</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style> 
+    <style>
         :root {
             --bg-color: #0f0f1a;
             --primary-color: #00a8ff;
@@ -194,7 +194,7 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            transition: width 0.3s ease;
+            transition: all 0.3s ease;
             overflow: hidden;
         }
 
@@ -256,7 +256,7 @@
             }
 
             .workspace {
-                width: 100%;
+                width: 100% !important;
             }
 
             .editor-container {
@@ -283,7 +283,7 @@
     </header>
 
     <main class="main-content">
-        <div class="editor-container">
+        <div class="editor-container" id="editor-container">
             <div class="editor-header">
                 <span class="editor-title">Code Editor</span>
                 <div class="editor-controls">
@@ -308,6 +308,7 @@
     <script>
         let editor;
         let socket;
+        let workspaceVisible = true;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -451,18 +452,19 @@
 
         function toggleWorkspace() {
             const workspace = document.getElementById('workspace');
-            const editorContainer = document.querySelector('.editor-container');
+            const editorContainer = document.getElementById('editor-container');
             const toggleBtn = document.getElementById('toggleWorkspaceBtn');
 
-            workspace.style.transition = 'width 0.3s ease-in-out';
-            editorContainer.style.transition = 'width 0.3s ease-in-out';
+            workspaceVisible = !workspaceVisible;
 
-            if (workspace.style.width === '0px' || workspace.style.width === '') {
+            if (workspaceVisible) {
                 workspace.style.width = '250px';
+                workspace.style.padding = '1rem';
                 editorContainer.style.width = 'calc(100% - 270px)';
                 toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Hide Workspace';
             } else {
-                workspace.style.width = '0px';
+                workspace.style.width = '0';
+                workspace.style.padding = '0';
                 editorContainer.style.width = '100%';
                 toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Show Workspace';
             }
