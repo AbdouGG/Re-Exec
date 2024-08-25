@@ -1,6 +1,6 @@
 {
     "rewrites": [
-      { "source": "/executor", "destination": "/executor.html" }
+      { "source": "/executor.html", "destination": "/executor" }
     ]
   }
   
