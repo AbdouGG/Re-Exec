@@ -318,7 +318,11 @@
         }
 
         function connectToWebSocket() {
-            socket = new WebSocket(`ws://${decodedIP}:7890/Execute`);
+            const socket = new WebSocket(`ws://${decodedIP}:7890/Execute`, null, {
+                headers: {
+                    'Authorization-Token': 'YourSecretToken'
+                }
+            });
 
             socket.onopen = function () {
                 updateConnectionStatus(true);
