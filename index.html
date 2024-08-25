@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Re-Exec</title>
-    <link rel="stylesheet" href="styles.css">
     <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/944246656646402049/1276988049082810430/Re.png?ex=66cb874c&is=66ca35cc&hm=337b2915d2b996f85fd6bc9cf2f3d82e883cdbfe3caf7082121e4dcd55540eff&">
     <style>
         /* Global Styles */
@@ -333,18 +332,17 @@
     -->
 
     <script>
-    // Check for the 'ip' parameter in the URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const encodedIP = urlParams.get('ip');
-
-    if (encodedIP) {
-        // Redirect to the executor page using the new path structure
-        window.location.href = `executor/${encodedIP}`;
-    } else {
-        document.getElementById('redirect-message').textContent = "To access the executor, please use the provided server link with the Base64 encoded IP.";
-    }
-</script>
-
+        // Check for the 'ip' parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const encodedIP = urlParams.get('ip');
+            
+        if (encodedIP) {
+            // Redirect to the executor page if 'ip' is present
+            window.location.href = `executor?ip=${encodedIP}`;
+        } else {
+            document.getElementById('redirect-message').textContent = "To access the executor, please use the provided server link with the Base64 encoded IP.";
+        }
+    </script>
 
     <footer class="footer">
         <p>&copy; 2024 Re-Exec. All Rights Reserved. <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
