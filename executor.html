@@ -83,7 +83,7 @@
             padding: 2rem;
             display: flex;
             gap: 2rem;
-            position: relative;
+            transition: all 0.3s ease;
         }
 
         .editor-container {
@@ -94,6 +94,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
+            transition: width 0.3s ease;
         }
 
         .editor-header {
@@ -195,16 +196,7 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            position: absolute;
-            right: -250px;
-            top: 2rem;
-            bottom: 2rem;
-            transition: right 0.3s ease;
-            z-index: 100;
-        }
-
-        .workspace.open {
-            right: 2rem;
+            transition: all 0.3s ease;
         }
 
         .workspace h3 {
@@ -241,24 +233,12 @@
             margin-bottom: 0.5rem;
         }
 
-        .workspace-toggle {
-            position: absolute;
-            right: 2rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 0.6rem;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 101;
+        #toggleWorkspaceBtn {
+            background-color: var(--secondary-color);
         }
 
-        .workspace-toggle:hover {
-            background-color: var(--secondary-color);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        #toggleWorkspaceBtn:hover {
+            background-color: var(--primary-color);
         }
 
         @media (max-width: 768px) {
@@ -278,15 +258,10 @@
 
             .workspace {
                 width: 100%;
-                right: -100%;
             }
 
-            .workspace.open {
-                right: 0;
-            }
-
-            .workspace-toggle {
-                right: 1rem;
+            .editor-container {
+                width: 100% !important;
             }
         }
     </style>
@@ -312,13 +287,11 @@
                 <div class="editor-controls">
                     <button onclick="executeCode()"><i class="fas fa-play"></i> Execute</button>
                     <button onclick="clearCode()"><i class="fas fa-trash"></i> Clear</button>
+                    <button onclick="toggleWorkspace()" id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
                 </div>
             </div>
             <div id="editor"></div>
         </div>
-        <button class="workspace-toggle" onclick="toggleWorkspace()">
-            <i class="fas fa-folder"></i>
-        </button>
         <div class="workspace" id="workspace">
             <h3>Workspace</h3>
             <input type="text" id="scriptName" placeholder="Script name">
@@ -461,8 +434,6 @@
             showNotification(`Loaded script: ${name}`);
         }
 
-    
-
         function goHome() {
             showNotification('Home functionality not implemented');
         }
@@ -479,46 +450,28 @@
             window.open('https://discord.com', '_blank');
         }
 
-        // Initialize the workspace state
-        let workspaceOpen = false;
-
         function toggleWorkspace() {
             const workspace = document.getElementById('workspace');
-            const toggleButton = document.querySelector('.workspace-toggle');
-            workspaceOpen = !workspaceOpen;
-            
-            if (workspaceOpen) {
-                workspace.classList.add('open');
-                toggleButton.innerHTML = '<i class="fas fa-times"></i>';
-            } else {
-                workspace.classList.remove('open');
-                toggleButton.innerHTML = '<i class="fas fa-folder"></i>';
-            }
-        }
-
-        // Function to adjust editor size when workspace is toggled
-        function adjustEditorSize() {
             const editorContainer = document.querySelector('.editor-container');
-            if (workspaceOpen) {
-                editorContainer.style.width = 'calc(100% - 270px)';
+            const toggleBtn = document.getElementById('toggleWorkspaceBtn');
+
+            if (workspace.style.display === 'none') {
+                workspace.style.display = 'flex';
+                editorContainer.style.width = 'calc(100% - 270px)'; // Adjust based on your workspace width
+                toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Hide Workspace';
             } else {
+                workspace.style.display = 'none';
                 editorContainer.style.width = '100%';
+                toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Show Workspace';
             }
-            editor.layout();
+
+            // Trigger Monaco editor layout update
+            if (editor) {
+                editor.layout();
+            }
         }
 
-        // Add event listener for workspace toggle
-        document.querySelector('.workspace-toggle').addEventListener('click', () => {
-            toggleWorkspace();
-            adjustEditorSize();
-        });
-
-        // Initialize connection and load scripts
         connectToWebSocket();
-        loadScripts();
-
-        // Adjust editor size on window resize
-        window.addEventListener('resize', adjustEditorSize);
-        </script>
-    </body>
+    </script>
+</body>
 </html>
