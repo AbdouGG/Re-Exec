@@ -332,6 +332,19 @@
     </section>
     -->
 
+    <script>
+        // Check for the 'ip' parameter in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const encodedIP = urlParams.get('ip');
+            
+        if (encodedIP) {
+            // Redirect to the executor page if 'ip' is present
+            window.location.href = `executor.html?ip=${encodedIP}`;
+        } else {
+            document.getElementById('redirect-message').textContent = "To access the executor, please use the provided server link with the Base64 encoded IP.";
+        }
+    </script>
+
     <footer class="footer">
         <p>&copy; 2024 Re-Exec. All Rights Reserved. <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
     </footer>
