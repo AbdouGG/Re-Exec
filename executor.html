@@ -82,7 +82,6 @@
             flex-grow: 1;
             padding: 2rem;
             display: flex;
-            flex-direction: column;
             gap: 2rem;
         }
 
@@ -116,7 +115,7 @@
             gap: 1rem;
         }
 
-        .editor-controls button {
+        .editor-controls button, .workspace button {
             background-color: var(--primary-color);
             color: var(--text-color);
             border: none;
@@ -130,7 +129,7 @@
             gap: 0.5rem;
         }
 
-        .editor-controls button:hover {
+        .editor-controls button:hover, .workspace button:hover {
             background-color: var(--secondary-color);
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -187,6 +186,50 @@
             }
         }
 
+        .workspace {
+            width: 250px;
+            background-color: var(--dark-bg);
+            border-radius: 15px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .workspace h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .workspace ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            max-height: calc(100vh - 300px);
+        }
+
+        .workspace li {
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .workspace li:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #scriptName {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 0.5rem;
+            border-radius: 5px;
+            color: var(--text-color);
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -196,6 +239,14 @@
 
             .nav-buttons {
                 flex-wrap: wrap;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .workspace {
+                width: 100%;
             }
         }
     </style>
@@ -225,6 +276,12 @@
             </div>
             <div id="editor"></div>
         </div>
+        <div class="workspace">
+            <h3>Workspace</h3>
+            <input type="text" id="scriptName" placeholder="Script name">
+            <button onclick="saveScript()"><i class="fas fa-save"></i> Save Script</button>
+            <ul id="scriptList"></ul>
+        </div>
         <div class="connection-status" id="connection-status">
             <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
         </div>
@@ -245,6 +302,7 @@
                 theme: 'vs-dark',
                 automaticLayout: true
             });
+            loadScripts();
         });
 
         const pathParts = window.location.pathname.split('/');
@@ -322,6 +380,42 @@
                 showNotification('Disconnected from server');
                 console.log('WebSocket connection closed');
             };
+        }
+
+        function saveScript() {
+            const scriptName = document.getElementById('scriptName').value.trim();
+            const scriptContent = editor.getValue();
+            
+            if (!scriptName) {
+                showNotification('Please enter a script name');
+                return;
+            }
+
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            scripts[scriptName] = scriptContent;
+            localStorage.setItem('scripts', JSON.stringify(scripts));
+            
+            showNotification('Script saved successfully');
+            loadScripts();
+        }
+
+        function loadScripts() {
+            const scriptList = document.getElementById('scriptList');
+            scriptList.innerHTML = '';
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            
+            for (const [name, content] of Object.entries(scripts)) {
+                const li = document.createElement('li');
+                li.textContent = name;
+                li.onclick = () => loadScript(name, content);
+                scriptList.appendChild(li);
+            }
+        }
+
+        function loadScript(name, content) {
+            editor.setValue(content);
+            document.getElementById('scriptName').value = name;
+            showNotification(`Loaded script: ${name}`);
         }
 
         function goHome() {
