@@ -25,7 +25,7 @@
 
     <div id="executor">
         <h2>Welcome to Re-Exec</h2>
-        <p>Re-Exec is a powerful tool that lets you run code in your Android emulator without opening any mobile executor.</p>
+        <p>Re-Exec is a powerful tool that lets you run code in your Android emulator without open any mobile executor.</p>
 
         <!-- Controls container now above the editor -->
         <div id="controls">
@@ -36,6 +36,7 @@
             </div>
         </div>
         
+
         <!-- Editor container -->
         <div id="editor"></div>
     </div>
@@ -58,9 +59,9 @@
             });
         });
 
-        // Extract the path part after "/executor/"
+        // Get the base64-encoded IP from the URL
         const pathParts = window.location.pathname.split('/');
-        const encodedIP = pathParts[2];  // Should be the 'dazadzad' part
+        const encodedIP = pathParts[2];
 
         if (!encodedIP) {
             document.body.innerHTML = '<h2>Invalid or missing IP address!</h2>';
@@ -156,9 +157,7 @@
         }
 
         // Attempt to connect when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            connectToWebSocket();
-        });
+        connectToWebSocket();
     </script>
 </body>
 </html>
