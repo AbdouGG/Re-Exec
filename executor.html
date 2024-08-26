@@ -216,13 +216,30 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
             border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .workspace li:hover {
             background-color: rgba(255, 255, 255, 0.1);
         }
 
-        #scriptName {
+        .workspace li button {
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 0.2rem;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .workspace li button:hover {
+            color: var(--primary-color);
+        }
+
+        #scriptName, #scriptCategory {
             background-color: rgba(255, 255, 255, 0.1);
             border: none;
             padding: 0.5rem;
@@ -238,6 +255,14 @@
 
         #toggleWorkspaceBtn:hover {
             background-color: var(--primary-color);
+        }
+
+        .category {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            background-color: rgba(0, 168, 255, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
         }
 
         @media (max-width: 768px) {
@@ -297,7 +322,16 @@
         <div class="workspace" id="workspace">
             <h3>Workspace</h3>
             <input type="text" id="scriptName" placeholder="Script name">
+            <select id="scriptCategory">
+                <option value="">Select Category</option>
+                <option value="General">General</option>
+                <option value="Utility">Utility</option>
+                <option value="Game">Game</option>
+            </select>
             <button onclick="saveScript()"><i class="fas fa-save"></i> Save Script</button>
+            <button onclick="exportScripts()"><i class="fas fa-file-export"></i> Export Scripts</button>
+            <input type="file" id="importFile" style="display: none;" onchange="importScripts(event)">
+            <button onclick="document.getElementById('importFile').click()"><i class="fas fa-file-import"></i> Import Scripts</button>
             <ul id="scriptList"></ul>
         </div>
     </main>
@@ -401,6 +435,7 @@
         function saveScript() {
             const scriptName = document.getElementById('scriptName').value.trim();
             const scriptContent = editor.getValue();
+            const scriptCategory = document.getElementById('scriptCategory').value;
             
             if (!scriptName) {
                 showNotification('Please enter a script name');
@@ -408,7 +443,10 @@
             }
 
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-            scripts[scriptName] = scriptContent;
+            scripts[scriptName] = {
+                content: scriptContent,
+                category: scriptCategory
+            };
             localStorage.setItem('scripts', JSON.stringify(scripts));
             
             showNotification('Script saved successfully');
@@ -420,18 +458,77 @@
             scriptList.innerHTML = '';
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             
-            for (const [name, content] of Object.entries(scripts)) {
+            for (const [name, scriptData] of Object.entries(scripts)) {
                 const li = document.createElement('li');
-                li.textContent = name;
-                li.onclick = () => loadScript(name, content);
+                li.innerHTML = `
+                    <span>${name}</span>
+                    <span class="category">${scriptData.category}</span>
+                    <button onclick="loadScript('${name}')"><i class="fas fa-edit"></i></button>
+                    <button onclick="renameScript('${name}')"><i class="fas fa-pencil-alt"></i></button>
+                    <button onclick="deleteScript('${name}')"><i class="fas fa-trash"></i></button>
+                `;
                 scriptList.appendChild(li);
             }
         }
 
-        function loadScript(name, content) {
-            editor.setValue(content);
+        function loadScript(name) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const scriptData = scripts[name];
+            editor.setValue(scriptData.content);
             document.getElementById('scriptName').value = name;
+            document.getElementById('scriptCategory').value = scriptData.category;
             showNotification(`Loaded script: ${name}`);
+        }
+
+        function renameScript(oldName) {
+            const newName = prompt('Enter new name for the script:', oldName);
+            if (newName && newName !== oldName) {
+                const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                scripts[newName] = scripts[oldName];
+                delete scripts[oldName];
+                localStorage.setItem('scripts', JSON.stringify(scripts));
+                loadScripts();
+                showNotification(`Script renamed to: ${newName}`);
+            }
+        }
+
+        function deleteScript(name) {
+            if (confirm(`Are you sure you want to delete the script: ${name}?`)) {
+                const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                delete scripts[name];
+                localStorage.setItem('scripts', JSON.stringify(scripts));
+                loadScripts();
+                showNotification(`Script deleted: ${name}`);
+            }
+        }
+
+        function exportScripts() {
+            const scripts = localStorage.getItem('scripts') || '{}';
+            const blob = new Blob([scripts], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'scripts_export.json';
+            a.click();
+        }
+
+        function importScripts(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importedScripts = JSON.parse(e.target.result);
+                        const currentScripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                        const mergedScripts = {...currentScripts, ...importedScripts};
+                        localStorage.setItem('scripts', JSON.stringify(mergedScripts));
+                        loadScripts();
+                        showNotification('Scripts imported successfully');
+                    } catch (error) {
+                        showNotification('Error importing scripts');
+                    }
+                };
+                reader.readAsText(file);
+            }
         }
 
         function goHome() {
