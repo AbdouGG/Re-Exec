@@ -509,6 +509,10 @@
                 <label for="autoSave">Auto-save</label>
             </div>
             <div>
+                <label for="autoSaveInterval">Auto-save Interval (seconds):</label>
+                <input type="number" id="autoSaveInterval" min="5" max="3600" value="30">
+            </div>
+            <div>
                 <input type="checkbox" id="autoComplete">
                 <label for="autoComplete">Auto-complete</label>
             </div>
@@ -542,12 +546,18 @@
                 <label for="autoCategorization">Auto-categorization Rules:</label>
                 <textarea id="autoCategorization" rows="3" placeholder="Enter rules..."></textarea>
             </div>
-            <div>
+            <div style="margin-top: 20px;">
                 <button id="backupScripts">Backup Scripts</button>
+            </div>
+            <div style="margin-top: 10px;">
                 <button id="restoreScripts">Restore Scripts</button>
             </div>
 
             <h3>Connection Settings</h3>
+            <div>
+                <input type="checkbox" id="enableConnection">
+                <label for="enableConnection">Enable Connection</label>
+            </div>
             <div>
                 <label for="defaultServer">Default Server Address:</label>
                 <input type="text" id="defaultServer" placeholder="Enter server address...">
@@ -574,6 +584,8 @@
         let editor;
         let socket;
         let workspaceVisible = true;
+        let autoSaveCount = 0;
+        let autoSaveInterval;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -636,12 +648,15 @@
             setTimeout(() => notification.style.display = 'none', 3000);
         }
 
-        function saveScript() {
-            const scriptName = document.getElementById('scriptName').value.trim();
+        function saveScript(isAutoSave = false) {
+            let scriptName = document.getElementById('scriptName').value.trim();
             const scriptContent = editor.getValue();
             const scriptCategory = document.getElementById('scriptCategory').value;
             
-            if (!scriptName) {
+            if (isAutoSave) {
+                autoSaveCount++;
+                scriptName = `autosave_${autoSaveCount}`;
+            } else if (!scriptName) {
                 showNotification('Please enter a script name');
                 return;
             }
@@ -650,7 +665,7 @@
             scripts[scriptName] = { content: scriptContent, category: scriptCategory };
             localStorage.setItem('scripts', JSON.stringify(scripts));
             
-            showNotification('Script saved successfully');
+            showNotification(isAutoSave ? `Auto-saved as: ${scriptName}` : 'Script saved successfully');
             loadScripts();
         }
 
@@ -832,6 +847,7 @@
             document.getElementById('colorScheme').value = settings.colorScheme || 'default';
             document.getElementById('fontSize').value = settings.fontSize || '14';
             document.getElementById('autoSave').checked = settings.autoSave || false;
+            document.getElementById('autoSaveInterval').value = settings.autoSaveInterval || '30';
             document.getElementById('autoComplete').checked = settings.autoComplete !== false;
             document.getElementById('lineNumbers').checked = settings.lineNumbers !== false;
             document.getElementById('minimap').checked = settings.minimap || false;
@@ -842,6 +858,7 @@
             document.getElementById('defaultServer').value = settings.defaultServer || '';
             document.getElementById('connectionTimeout').value = settings.connectionTimeout || '30';
             document.getElementById('reconnectAttempts').value = settings.reconnectAttempts || '3';
+            document.getElementById('enableConnection').checked = settings.enableConnection !== false;
         }
 
         function saveSettings() {
@@ -850,6 +867,7 @@
                 colorScheme: document.getElementById('colorScheme').value,
                 fontSize: document.getElementById('fontSize').value,
                 autoSave: document.getElementById('autoSave').checked,
+                autoSaveInterval: document.getElementById('autoSaveInterval').value,
                 autoComplete: document.getElementById('autoComplete').checked,
                 lineNumbers: document.getElementById('lineNumbers').checked,
                 minimap: document.getElementById('minimap').checked,
@@ -859,7 +877,8 @@
                 autoCategorization: document.getElementById('autoCategorization').value,
                 defaultServer: document.getElementById('defaultServer').value,
                 connectionTimeout: document.getElementById('connectionTimeout').value,
-                reconnectAttempts: document.getElementById('reconnectAttempts').value
+                reconnectAttempts: document.getElementById('reconnectAttempts').value,
+                enableConnection: document.getElementById('enableConnection').checked
             };
 
             localStorage.setItem('settings', JSON.stringify(settings));
@@ -889,16 +908,25 @@
                 autoSurround: settings.autoComplete ? 'always' : 'never'
             });
 
+            if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
             if (settings.autoSave) {
-                setInterval(saveScript, 30000);
+                const interval = parseInt(settings.autoSaveInterval) * 1000;
+                autoSaveInterval = setInterval(() => saveScript(true), interval);
             }
 
             document.getElementById('scriptCategory').value = settings.defaultCategory || '';
 
-            if (socket) {
+            if (settings.enableConnection) {
+                if (socket) {
+                    socket.close();
+                }
+                connectToWebSocket(settings.defaultServer, settings.connectionTimeout, settings.reconnectAttempts);
+            } else if (socket) {
                 socket.close();
+                updateConnectionStatus(false);
             }
-            connectToWebSocket(settings.defaultServer, settings.connectionTimeout, settings.reconnectAttempts);
 
             document.body.style.fontSize = `${settings.fontSize}px`;
 
@@ -924,6 +952,39 @@
             editor.setValue('');
             showNotification('Code cleared');
         });
+
+        document.getElementById('backupScripts').addEventListener('click', () => {
+            const scripts = localStorage.getItem('scripts');
+            const blob = new Blob([scripts], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'scripts_backup.json';
+            a.click();
+            showNotification('Scripts backed up successfully');
+        });
+
+        document.getElementById('restoreScripts').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        JSON.parse(e.target.result); // Validate JSON
+                        localStorage.setItem('scripts', e.target.result);
+                        loadScripts();
+                        showNotification('Scripts restored successfully');
+                    } catch (error) {
+                        showNotification('Invalid backup file');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        });
+
 
         document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
         document.getElementById('saveScriptBtn').addEventListener('click', saveScript);
