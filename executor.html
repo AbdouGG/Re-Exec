@@ -630,24 +630,35 @@
         }
 
         function saveScript(isAutoSave = false) {
-            let scriptName = document.getElementById('scriptName').value.trim();
             const scriptContent = editor.getValue();
             const scriptCategory = document.getElementById('scriptCategory').value;
             
             if (isAutoSave) {
                 autoSaveCount++;
-                scriptName = `autosave_${autoSaveCount}`;
-            } else if (!scriptName) {
-                showNotification('Please enter a script name');
-                return;
+                const scriptName = `autosave_${autoSaveCount}`;
+                saveScriptToStorage(scriptName, scriptContent, scriptCategory, true);
+            } else {
+                const scriptName = document.getElementById('scriptName').value.trim();
+                if (!scriptName) {
+                    showNotification('Please enter a script name');
+                    return;
+                }
+                saveScriptToStorage(scriptName, scriptContent, scriptCategory, false);
             }
+        }
 
+        function saveScriptToStorage(scriptName, scriptContent, scriptCategory, isAutoSave) {
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             scripts[scriptName] = { content: scriptContent, category: scriptCategory };
             localStorage.setItem('scripts', JSON.stringify(scripts));
             
             showNotification(isAutoSave ? `Auto-saved as: ${scriptName}` : `Script saved as: ${scriptName}`);
             loadScripts();
+
+            if (!isAutoSave) {
+                // Don't clear the script name input after manual save
+                // document.getElementById('scriptName').value = '';
+            }
         }
 
         function loadScripts() {
