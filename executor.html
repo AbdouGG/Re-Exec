@@ -629,30 +629,48 @@
             setTimeout(() => notification.style.display = 'none', 3000);
         }
 
-        function saveScript(isAutoSave = false) {
-            let scriptName = document.getElementById('scriptName').value.trim();
+        // Function for manual saving
+        function manualSaveScript() {
+            const scriptName = document.getElementById('scriptName').value.trim();
             const scriptContent = editor.getValue();
             const scriptCategory = document.getElementById('scriptCategory').value;
             
-            if (isAutoSave) {
-                autoSaveCount++;
-                scriptName = `autosave_${autoSaveCount}`;
-            } else {
-                if (!scriptName) {
-                    showNotification('Please enter a script name');
-                    return;
-                }
+            if (!scriptName) {
+                showNotification('Please enter a script name');
+                return;
             }
 
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             scripts[scriptName] = { content: scriptContent, category: scriptCategory };
             localStorage.setItem('scripts', JSON.stringify(scripts));
             
-            showNotification(isAutoSave ? `Auto-saved as: ${scriptName}` : `Script saved as: ${scriptName}`);
+            showNotification(`Script saved as: ${scriptName}`);
             loadScripts();
+        }
 
-            // Don't clear the script name input after saving
-            // This allows users to continue working on the same script if they wish
+        // Separate function for auto-save
+        function autoSaveScript() {
+            autoSaveCount++;
+            const scriptName = `autosave_${autoSaveCount}`;
+            const scriptContent = editor.getValue();
+            const scriptCategory = document.getElementById('scriptCategory').value;
+
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            scripts[scriptName] = { content: scriptContent, category: scriptCategory };
+            localStorage.setItem('scripts', JSON.stringify(scripts));
+            
+            showNotification(`Auto-saved as: ${scriptName}`);
+            loadScripts();
+        }
+
+        function setupAutoSave() {
+            const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+            if (settings.autoSave) {
+                const interval = parseInt(settings.autoSaveInterval) * 1000;
+                autoSaveInterval = setInterval(autoSaveScript, interval);
+            } else if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
         }
 
         function loadScripts() {
@@ -886,13 +904,7 @@
                 autoSurround: settings.autoComplete ? 'always' : 'never'
             });
 
-            if (autoSaveInterval) {
-                clearInterval(autoSaveInterval);
-            }
-            if (settings.autoSave) {
-                const interval = parseInt(settings.autoSaveInterval) * 1000;
-                autoSaveInterval = setInterval(() => saveScript(true), interval);
-            }
+            setupAutoSave();
 
             document.getElementById('scriptCategory').value = settings.defaultCategory || '';
 
@@ -956,8 +968,7 @@
 
 
         document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
-        document.getElementById('saveScriptBtn').addEventListener('click', () => saveScript());
-        setInterval(() => saveScript(true), autoSaveInterval);
+        document.getElementById('saveScriptBtn').addEventListener('click', () => manualSaveScript);
         document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
         document.getElementById('importScriptsBtn').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', importScripts);
