@@ -340,7 +340,7 @@
             </select>
             <button onclick="saveScript()"><i class="fas fa-save"></i> Save Script</button>
             <button onclick="exportScripts()"><i class="fas fa-file-export"></i> Export Scripts</button>
-            <input type="file" id="importFile" style="display: none;" onchange="importScripts(event)">
+            <input type="file" id="importFile" style="display: none;" onchange="importScripts(event)" multiple>
             <button onclick="document.getElementById('importFile').click()"><i class="fas fa-file-import"></i> Import Scripts</button>
             <ul id="scriptList"></ul>
         </div>
@@ -528,31 +528,41 @@
         }
 
         function importScripts(event) {
-            const file = event.target.files[0];
-            if (file) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            let importedCount = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
                 const reader = new FileReader();
+
                 reader.onload = function(e) {
-                    try {
-                        const content = e.target.result;
-                        const scriptRegex = /-- Script: (.+)\n-- Category: (.+)\n([\s\S]+?)(?=\n-- Script:|$)/g;
-                        let match;
-                        const importedScripts = {};
-                        while ((match = scriptRegex.exec(content)) !== null) {
-                            const [, name, category, scriptContent] = match;
-                            importedScripts[name.trim()] = {
-                                content: scriptContent.trim(),
-                                category: category.trim()
-                            };
-                        }
-                        const currentScripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-                        const mergedScripts = {...currentScripts, ...importedScripts};
-                        localStorage.setItem('scripts', JSON.stringify(mergedScripts));
+                    const content = e.target.result;
+                    const scriptName = file.name.replace('.lua', '');
+                    
+                    // Extract category if present, otherwise set as "General"
+                    let category = "General";
+                    const categoryMatch = content.match(/-- Category: (.+)/);
+                    if (categoryMatch) {
+                        category = categoryMatch[1].trim();
+                    }
+
+                    scripts[scriptName] = {
+                        content: content,
+                        category: category
+                    };
+
+                    importedCount++;
+
+                    if (importedCount === files.length) {
+                        localStorage.setItem('scripts', JSON.stringify(scripts));
                         loadScripts();
-                        showNotification('Scripts imported successfully');
-                    } catch (error) {
-                        showNotification('Error importing scripts');
+                        showNotification(`Imported ${importedCount} script(s) successfully`);
                     }
                 };
+
                 reader.readAsText(file);
             }
         }
