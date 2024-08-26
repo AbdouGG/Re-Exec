@@ -648,6 +648,8 @@
             loadScripts();
         }
 
+        
+
         // Separate function for auto-save
         function autoSaveScript() {
             autoSaveCount++;
@@ -968,7 +970,7 @@
 
 
         document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
-        document.getElementById('saveScriptBtn').addEventListener('click', () => manualSaveScript);
+        document.getElementById('saveScriptBtn').addEventListener('click', manualSaveScript);
         document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
         document.getElementById('importScriptsBtn').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', importScripts);
