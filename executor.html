@@ -270,6 +270,56 @@
             font-size: 0.8rem;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--dark-bg);
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .modal p {
+            margin-bottom: 20px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--light-bg);
+            border-radius: 5px;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal button {
+            padding: 8px 16px;
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -350,6 +400,29 @@
             </div>
         </div>
     </main>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h2>Delete Script</h2>
+            <p>Are you sure you want to delete the script: <span id="deleteScriptName"></span>?</p>
+            <div class="modal-buttons">
+                <button id="confirmDelete">Delete</button>
+                <button id="cancelDelete">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="renameModal" class="modal">
+        <div class="modal-content">
+            <h2>Rename Script</h2>
+            <p>Enter new name for the script: <span id="oldScriptName"></span></p>
+            <input type="text" id="newScriptName" placeholder="New script name">
+            <div class="modal-buttons">
+                <button id="confirmRename">Rename</button>
+                <button id="cancelRename">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <div id="notification"></div>
 
@@ -568,6 +641,70 @@
                 workspace.style.overflow = workspaceVisible ? 'visible' : 'hidden';
                 editor.layout();
             }, 300);
+        }
+
+        function deleteScript(name) {
+            const deleteModal = document.getElementById('deleteModal');
+            const deleteScriptName = document.getElementById('deleteScriptName');
+            const confirmDelete = document.getElementById('confirmDelete');
+            const cancelDelete = document.getElementById('cancelDelete');
+
+            deleteScriptName.textContent = name;
+            deleteModal.style.display = 'block';
+
+            confirmDelete.onclick = function() {
+                const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                delete scripts[name];
+                localStorage.setItem('scripts', JSON.stringify(scripts));
+                loadScripts();
+                showNotification(`Script deleted: ${name}`);
+                deleteModal.style.display = 'none';
+            };
+
+            cancelDelete.onclick = function() {
+                deleteModal.style.display = 'none';
+            };
+        }
+
+        function renameScript(oldName) {
+            const renameModal = document.getElementById('renameModal');
+            const oldScriptName = document.getElementById('oldScriptName');
+            const newScriptName = document.getElementById('newScriptName');
+            const confirmRename = document.getElementById('confirmRename');
+            const cancelRename = document.getElementById('cancelRename');
+
+            oldScriptName.textContent = oldName;
+            newScriptName.value = oldName;
+            renameModal.style.display = 'block';
+
+            confirmRename.onclick = function() {
+                const newName = newScriptName.value.trim();
+                if (newName && newName !== oldName) {
+                    const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                    scripts[newName] = scripts[oldName];
+                    delete scripts[oldName];
+                    localStorage.setItem('scripts', JSON.stringify(scripts));
+                    loadScripts();
+                    showNotification(`Script renamed to: ${newName}`);
+                }
+                renameModal.style.display = 'none';
+            };
+
+            cancelRename.onclick = function() {
+                renameModal.style.display = 'none';
+            };
+        }
+
+        // Add this function to close modals when clicking outside
+        window.onclick = function(event) {
+            const deleteModal = document.getElementById('deleteModal');
+            const renameModal = document.getElementById('renameModal');
+            if (event.target == deleteModal) {
+                deleteModal.style.display = 'none';
+            }
+            if (event.target == renameModal) {
+                renameModal.style.display = 'none';
+            }
         }
 
         document.getElementById('executeBtn').addEventListener('click', () => {
