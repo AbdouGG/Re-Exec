@@ -47,12 +47,12 @@
         }
 
         .logo img {
-            width: 40px;
-            margin-right: 15px;
+            width: 30px;
+            margin-right: 10px;
         }
 
         .logo h1 {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--dark-bg);
             margin: 0;
@@ -60,22 +60,22 @@
 
         nav {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
         }
 
         button {
             background-color: var(--light-bg);
             border: none;
             color: var(--text-color);
-            padding: 0.7rem 1.2rem;
-            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.3rem;
         }
 
         button:hover {
@@ -86,14 +86,16 @@
         }
 
         #connection-status {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            padding: 0.7rem 1.5rem;
-            border-radius: 30px;
+            padding: 0.3rem 0.7rem;
+            border-radius: 15px;
             background-color: var(--error-color);
             color: var(--dark-bg);
             font-weight: 500;
+            font-size: 0.7rem;
             transition: all 0.3s ease;
+            margin-left: 10px;
         }
 
         #connection-status.connected {
@@ -101,19 +103,19 @@
         }
 
         #connection-status i {
-            margin-right: 0.7rem;
+            margin-right: 0.3rem;
         }
 
         main {
             display: flex;
             flex-grow: 1;
-            padding: 2rem;
-            gap: 2rem;
+            padding: 1rem;
+            gap: 1rem;
         }
 
         #editor-container {
             background-color: var(--dark-bg);
-            border-radius: 15px;
+            border-radius: 10px;
             overflow: hidden;
             flex-grow: 1;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -124,7 +126,7 @@
 
         #editor-header {
             background-color: var(--light-bg);
-            padding: 1rem;
+            padding: 0.7rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -132,30 +134,32 @@
         }
 
         #editor-header h2 {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--primary-color);
             margin: 0;
+            display: flex;
+            align-items: center;
         }
 
         #editor-controls {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
         }
 
         #editor {
-            height: calc(100vh - 250px);
+            height: calc(100vh - 200px);
             flex-grow: 1;
         }
 
         #workspace {
-            width: 250px;
+            width: 230px;
             background-color: var(--dark-bg);
-            border-radius: 15px;
-            padding: 1rem;
+            border-radius: 10px;
+            padding: 0.7rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.7rem;
             transition: all 0.3s ease;
             overflow: hidden;
         }
@@ -163,16 +167,17 @@
         #workspace h3 {
             margin: 0;
             color: var(--primary-color);
+            font-size: 0.9rem;
         }
 
         #scriptName, #scriptCategory {
             background-color: var(--light-bg);
             border: none;
-            padding: 0.5rem;
+            padding: 0.4rem;
             border-radius: 5px;
             color: var(--text-color);
             width: 100%;
-            margin-bottom: 0.5rem;
+            font-size: 0.8rem;
         }
 
         #scriptCategory {
@@ -186,14 +191,14 @@
         }
 
         #script-list-container {
-            max-height: calc(100vh - 400px);
+            max-height: calc(100vh - 350px);
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: var(--primary-color) var(--dark-bg);
         }
 
         #script-list-container::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         #script-list-container::-webkit-scrollbar-track {
@@ -202,7 +207,7 @@
 
         #script-list-container::-webkit-scrollbar-thumb {
             background-color: var(--primary-color);
-            border-radius: 4px;
+            border-radius: 3px;
             border: 2px solid var(--dark-bg);
         }
 
@@ -213,13 +218,14 @@
         }
 
         #scriptList li {
-            padding: 0.5rem;
+            padding: 0.4rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
             border-radius: 5px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 0.8rem;
         }
 
         #scriptList li:hover {
@@ -232,8 +238,9 @@
             color: var(--text-color);
             cursor: pointer;
             padding: 0.2rem;
-            margin-left: 0.5rem;
+            margin-left: 0.3rem;
             transition: all 0.3s ease;
+            font-size: 0.7rem;
         }
 
         #scriptList li button:hover {
@@ -241,10 +248,10 @@
         }
 
         .category {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--primary-color);
             background-color: rgba(137, 180, 250, 0.1);
-            padding: 0.2rem 0.5rem;
+            padding: 0.1rem 0.3rem;
             border-radius: 10px;
         }
 
@@ -254,11 +261,12 @@
             right: 20px;
             background-color: var(--primary-color);
             color: var(--dark-bg);
-            padding: 1rem 1.5rem;
+            padding: 0.7rem 1rem;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             display: none;
             animation: slideIn 0.3s ease-out;
+            font-size: 0.8rem;
         }
 
         @keyframes slideIn {
@@ -276,7 +284,7 @@
             header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 1rem;
+                gap: 0.7rem;
             }
 
             nav {
@@ -309,15 +317,12 @@
             <button id="helpBtn"><i class="fas fa-question-circle"></i> How to use</button>
             <button id="discordBtn"><i class="fab fa-discord"></i> Discord</button>
         </nav>
-        <div id="connection-status">
-            <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
-        </div>
     </header>
 
     <main>
         <div id="editor-container">
             <div id="editor-header">
-                <h2>Code Editor</h2>
+                <h2>Code Editor <span id="connection-status"><i class="fas fa-plug"></i> <span id="status-text">Not Connected</span></span></h2>
                 <div id="editor-controls">
                     <button id="executeBtn"><i class="fas fa-play"></i> Execute</button>
                     <button id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
@@ -352,7 +357,6 @@
         let socket;
         let workspaceVisible = true;
 
-        // Initialize Monaco Editor
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
             editor = monaco.editor.create(document.getElementById('editor'), {
@@ -364,7 +368,6 @@
             loadScripts();
         });
 
-        // Decode IP address from URL
         const pathParts = window.location.pathname.split('/');
         const encodedIP = pathParts[2];
         if (!encodedIP) {
@@ -373,7 +376,6 @@
         }
         const decodedIP = atob(encodedIP);
 
-        // WebSocket connection
         function connectToWebSocket() {
             const token = "AbdouGG";
             socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
@@ -390,7 +392,6 @@
             };
         }
 
-        // UI update functions
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connection-status');
             const statusText = document.getElementById('status-text');
@@ -405,7 +406,6 @@
             setTimeout(() => notification.style.display = 'none', 3000);
         }
 
-        // Script management functions
         function saveScript() {
             const scriptName = document.getElementById('scriptName').value.trim();
             const scriptContent = editor.getValue();
@@ -548,14 +548,25 @@
             const editorContainer = document.getElementById('editor-container');
             const toggleBtn = document.getElementById('toggleWorkspaceBtn');
 
-            workspace.style.display = workspaceVisible ? 'block' : 'none';
-            editorContainer.style.width = workspaceVisible ? 'calc(100% - 250px)' : '100%';
+            workspace.style.transition = 'width 0.3s ease-in-out';
+            editorContainer.style.transition = 'width 0.3s ease-in-out';
+
+            if (workspaceVisible) {
+                workspace.style.width = '250px';
+                editorContainer.style.width = 'calc(100% - 250px)';
+            } else {
+                workspace.style.width = '0';
+                editorContainer.style.width = '100%';
+            }
+
             toggleBtn.innerHTML = workspaceVisible ? '<i class="fas fa-columns"></i> Hide Workspace' : '<i class="fas fa-columns"></i> Show Workspace';
 
-            setTimeout(() => editor.layout(), 300);
+            setTimeout(() => {
+                workspace.style.overflow = workspaceVisible ? 'visible' : 'hidden';
+                editor.layout();
+            }, 300);
         }
 
-        // Event listeners
         document.getElementById('executeBtn').addEventListener('click', () => {
             const code = editor.getValue();
             if (code.trim() === '') {
@@ -587,7 +598,6 @@
         document.getElementById('helpBtn').addEventListener('click', () => showNotification('How to use functionality not implemented'));
         document.getElementById('discordBtn').addEventListener('click', () => window.open('https://discord.com', '_blank'));
 
-        // Initialize
         connectToWebSocket();
     </script>
 </body>
