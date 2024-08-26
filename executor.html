@@ -646,7 +646,7 @@
             scripts[scriptName] = { content: scriptContent, category: scriptCategory };
             localStorage.setItem('scripts', JSON.stringify(scripts));
             
-            showNotification(isAutoSave ? `Auto-saved as: ${scriptName}` : 'Script saved successfully');
+            showNotification(isAutoSave ? `Auto-saved as: ${scriptName}` : `Script saved as: ${scriptName}`);
             loadScripts();
         }
 
