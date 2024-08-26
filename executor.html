@@ -249,6 +249,16 @@
             margin-bottom: 0.5rem;
         }
 
+        #scriptCategory {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+        }
+
+        #scriptCategory option {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+        }
+
         #toggleWorkspaceBtn {
             background-color: var(--secondary-color);
         }
@@ -322,8 +332,8 @@
         <div class="workspace" id="workspace">
             <h3>Workspace</h3>
             <input type="text" id="scriptName" placeholder="Script name">
-            <select id="scriptCategory">
-                <option value="">Select Category</option>
+            <select id="scriptCategory" onchange="filterScripts()">
+                <option value="">All Categories</option>
                 <option value="General">General</option>
                 <option value="Utility">Utility</option>
                 <option value="Game">Game</option>
@@ -503,11 +513,17 @@
         }
 
         function exportScripts() {
-            const scripts = localStorage.getItem('scripts') || '{}';
-            const blob = new Blob([scripts], {type: 'application/json'});
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            let luaContent = '';
+            for (const [name, scriptData] of Object.entries(scripts)) {
+                luaContent += `-- Script: ${name}\n`;
+                luaContent += `-- Category: ${scriptData.category}\n`;
+                luaContent += scriptData.content + '\n\n';
+            }
+            const blob = new Blob([luaContent], {type: 'text/plain'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = 'scripts_export.json';
+            a.download = 'scripts_export.lua';
             a.click();
         }
 
@@ -517,7 +533,17 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
-                        const importedScripts = JSON.parse(e.target.result);
+                        const content = e.target.result;
+                        const scriptRegex = /-- Script: (.+)\n-- Category: (.+)\n([\s\S]+?)(?=\n-- Script:|$)/g;
+                        let match;
+                        const importedScripts = {};
+                        while ((match = scriptRegex.exec(content)) !== null) {
+                            const [, name, category, scriptContent] = match;
+                            importedScripts[name.trim()] = {
+                                content: scriptContent.trim(),
+                                category: category.trim()
+                            };
+                        }
                         const currentScripts = JSON.parse(localStorage.getItem('scripts') || '{}');
                         const mergedScripts = {...currentScripts, ...importedScripts};
                         localStorage.setItem('scripts', JSON.stringify(mergedScripts));
@@ -528,6 +554,27 @@
                     }
                 };
                 reader.readAsText(file);
+            }
+        }
+
+        function filterScripts() {
+            const category = document.getElementById('scriptCategory').value;
+            const scriptList = document.getElementById('scriptList');
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+
+            scriptList.innerHTML = '';
+            for (const [name, scriptData] of Object.entries(scripts)) {
+                if (category === '' || scriptData.category === category) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>${name}</span>
+                        <span class="category">${scriptData.category}</span>
+                        <button onclick="loadScript('${name}')"><i class="fas fa-edit"></i></button>
+                        <button onclick="renameScript('${name}')"><i class="fas fa-pencil-alt"></i></button>
+                        <button onclick="deleteScript('${name}')"><i class="fas fa-trash"></i></button>
+                    `;
+                    scriptList.appendChild(li);
+                }
             }
         }
 
