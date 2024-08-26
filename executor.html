@@ -138,51 +138,8 @@
         }
 
         #editor {
-            height: calc(50vh - 125px);
+            height: calc(100vh - 250px);
             flex-grow: 1;
-        }
-
-        #console {
-            height: calc(50vh - 125px);
-            background-color: #1e1e2e;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .console-header {
-            background-color: rgba(255, 255, 255, 0.05);
-            padding: 0.5rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .console-header span {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .console-header button {
-            background-color: transparent;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .console-header button:hover {
-            color: var(--primary-color);
-        }
-
-        #console-output {
-            flex-grow: 1;
-            padding: 1rem;
-            overflow-y: auto;
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
         }
 
         .connection-status {
@@ -361,18 +318,16 @@
                 </div>
             </div>
             <div id="editor"></div>
-            <div id="console">
-                <div class="console-header">
-                    <span>Console</span>
-                    <button onclick="clearConsole()"><i class="fas fa-trash"></i> Clear Console</button>
-                </div>
-                <div id="console-output"></div>
-            </div>
         </div>
         <div class="workspace" id="workspace">
             <h3>Workspace</h3>
             <input type="text" id="scriptName" placeholder="Script name">
-            <input type="text" id="scriptCategory" placeholder="Script category">
+            <select id="scriptCategory">
+                <option value="">Select Category</option>
+                <option value="General">General</option>
+                <option value="Utility">Utility</option>
+                <option value="Game">Game</option>
+            </select>
             <button onclick="saveScript()"><i class="fas fa-save"></i> Save Script</button>
             <button onclick="exportScripts()"><i class="fas fa-file-export"></i> Export Scripts</button>
             <input type="file" id="importFile" style="display: none;" onchange="importScripts(event)">
@@ -462,7 +417,6 @@
             };
 
             socket.onmessage = function(event) {
-                appendToConsole(event.data);
                 showNotification('Script executed successfully!');
             };
 
@@ -478,22 +432,10 @@
             };
         }
 
-        function appendToConsole(message) {
-            const consoleOutput = document.getElementById('console-output');
-            const messageElement = document.createElement('div');
-            messageElement.textContent = message;
-            consoleOutput.appendChild(messageElement);
-            consoleOutput.scrollTop = consoleOutput.scrollHeight;
-        }
-
-        function clearConsole() {
-            document.getElementById('console-output').innerHTML = '';
-        }
-
         function saveScript() {
             const scriptName = document.getElementById('scriptName').value.trim();
             const scriptContent = editor.getValue();
-            const scriptCategory = document.getElementById('scriptCategory').value.trim();
+            const scriptCategory = document.getElementById('scriptCategory').value;
             
             if (!scriptName) {
                 showNotification('Please enter a script name');
