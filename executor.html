@@ -3,199 +3,399 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Re-Exec Ultra Classic</title>
+    <title>Re-Exec Ultra Pro</title>
+    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
     <style>
+        :root {
+            --bg-color: #1e1e2e;
+            --primary-color: #89b4fa;
+            --secondary-color: #f38ba8;
+            --text-color: #cdd6f4;
+            --dark-bg: #181825;
+            --light-bg: #313244;
+            --success-color: #a6e3a1;
+            --error-color: #f38ba8;
+        }
+
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
-            color: #333;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
-        h1 {
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            width: 40px;
+            margin-right: 15px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-bg);
             margin: 0;
-            font-size: 2rem;
         }
 
         nav {
-            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
         }
 
         button {
-            background-color: #3498db;
+            background-color: var(--light-bg);
             border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            margin: 0 0.25rem;
+            color: var(--text-color);
+            padding: 0.7rem 1.2rem;
+            border-radius: 30px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         button:hover {
-            background-color: #2980b9;
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         #connection-status {
-            margin-top: 0.5rem;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            background-color: var(--error-color);
+            color: var(--dark-bg);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #connection-status.connected {
+            background-color: var(--success-color);
+        }
+
+        #connection-status i {
+            margin-right: 0.7rem;
         }
 
         main {
             display: flex;
-            margin: 1rem;
-            gap: 1rem;
+            flex-grow: 1;
+            padding: 2rem;
+            gap: 2rem;
         }
 
         #editor-container {
-            flex: 1;
-            border: 1px solid #bdc3c7;
-            border-radius: 4px;
+            background-color: var(--dark-bg);
+            border-radius: 15px;
             overflow: hidden;
-            background-color: white;
+            flex-grow: 1;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
         }
 
-        .editor-header {
-            background-color: #ecf0f1;
-            padding: 0.5rem;
-            border-bottom: 1px solid #bdc3c7;
+        #editor-header {
+            background-color: var(--light-bg);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--primary-color);
+        }
+
+        #editor-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        #editor-controls {
+            display: flex;
+            gap: 1rem;
         }
 
         #editor {
-            height: 500px;
+            height: calc(100vh - 250px);
+            flex-grow: 1;
         }
 
         #workspace {
-            width: 300px;
-            background-color: white;
-            border: 1px solid #bdc3c7;
-            border-radius: 4px;
+            width: 250px;
+            background-color: var(--dark-bg);
+            border-radius: 15px;
             padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: all 0.3s ease;
+            overflow: hidden;
         }
 
-        input[type="text"], select {
-            width: 100%;
+        #workspace h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        #scriptName, #scriptCategory {
+            background-color: var(--light-bg);
+            border: none;
             padding: 0.5rem;
+            border-radius: 5px;
+            color: var(--text-color);
+            width: 100%;
             margin-bottom: 0.5rem;
-            border: 1px solid #bdc3c7;
+        }
+
+        #scriptCategory {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+        }
+
+        #scriptCategory option {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+        }
+
+        #script-list-container {
+            max-height: calc(100vh - 400px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--dark-bg);
+        }
+
+        #script-list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #script-list-container::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        #script-list-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
             border-radius: 4px;
+            border: 2px solid var(--dark-bg);
         }
 
         #scriptList {
-            margin-top: 1rem;
-            border: 1px solid #bdc3c7;
-            border-radius: 4px;
-            padding: 0.5rem;
-            max-height: 300px;
-            overflow-y: auto;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
         }
 
-        #scriptList div {
-            margin-bottom: 0.5rem;
+        #scriptList li {
             padding: 0.5rem;
-            background-color: #f9f9f9;
-            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #scriptList li:hover {
+            background-color: var(--light-bg);
+        }
+
+        #scriptList li button {
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 0.2rem;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        #scriptList li button:hover {
+            color: var(--primary-color);
+        }
+
+        .category {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            background-color: rgba(137, 180, 250, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
         }
 
         #notification {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: #2ecc71;
-            color: white;
-            padding: 1rem;
-            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             display: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            nav {
+                flex-wrap: wrap;
+            }
+
             main {
                 flex-direction: column;
             }
 
             #workspace {
-                width: auto;
+                width: 100% !important;
+            }
+
+            #editor-container {
+                width: 100% !important;
             }
         }
     </style>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 20px;">
-    <header style="background-color: #333; color: white; padding: 10px; text-align: center;">
-        <h1>Re-Exec Ultra Classic</h1>
+<body>
+    <header>
+        <div class="logo">
+            <img src="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&" alt="Logo">
+            <h1>Re-Exec Ultra Pro</h1>
+        </div>
         <nav>
-            <button onclick="goHome()">Home</button>
-            <button onclick="openSettings()">Settings</button>
-            <button onclick="showHowToUse()">How to use</button>
-            <button onclick="joinDiscord()">Discord</button>
+            <button id="homeBtn"><i class="fas fa-home"></i> Home</button>
+            <button id="settingsBtn"><i class="fas fa-cog"></i> Settings</button>
+            <button id="helpBtn"><i class="fas fa-question-circle"></i> How to use</button>
+            <button id="discordBtn"><i class="fab fa-discord"></i> Discord</button>
         </nav>
-        <div id="connection-status" style="margin-top: 10px;">Not Connected</div>
+        <div id="connection-status">
+            <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
+        </div>
     </header>
 
-    <main style="display: flex; margin-top: 20px;">
-        <div id="editor-container" style="flex: 1; border: 2px solid #333; background-color: white;">
-            <div style="background-color: #ddd; padding: 10px;">
-                <span>Code Editor</span>
-                <button onclick="executeCode()">Execute</button>
-                <button onclick="clearCode()">Clear</button>
-                <button onclick="toggleWorkspace()" id="toggleWorkspaceBtn">Toggle Workspace</button>
+    <main>
+        <div id="editor-container">
+            <div id="editor-header">
+                <h2>Code Editor</h2>
+                <div id="editor-controls">
+                    <button id="executeBtn"><i class="fas fa-play"></i> Execute</button>
+                    <button id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
+                    <button id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
+                </div>
             </div>
-            <div id="editor" style="height: 400px; border: 1px solid #ccc;"></div>
+            <div id="editor"></div>
         </div>
-        <div id="workspace" style="width: 250px; background-color: white; border: 2px solid #333; margin-left: 20px; padding: 10px;">
+        <div id="workspace">
             <h3>Workspace</h3>
             <input type="text" id="scriptName" placeholder="Script name">
-            <select id="scriptCategory" onchange="filterScripts()">
+            <select id="scriptCategory">
                 <option value="">All Categories</option>
                 <option value="General">General</option>
                 <option value="Utility">Utility</option>
                 <option value="Game">Game</option>
             </select>
-            <button onclick="saveScript()">Save Script</button>
-            <button onclick="exportScripts()">Export Scripts</button>
-            <input type="file" id="importFile" style="display: none;" onchange="importScripts(event)" multiple>
-            <button onclick="document.getElementById('importFile').click()">Import Scripts</button>
-            <div id="scriptList" style="margin-top: 10px; border: 1px solid #ccc; padding: 10px;"></div>
+            <button id="saveScriptBtn"><i class="fas fa-save"></i> Save Script</button>
+            <button id="exportScriptsBtn"><i class="fas fa-file-export"></i> Export Scripts</button>
+            <input type="file" id="importFile" style="display: none;" multiple>
+            <button id="importScriptsBtn"><i class="fas fa-file-import"></i> Import Scripts</button>
+            <div id="script-list-container">
+                <ul id="scriptList"></ul>
+            </div>
         </div>
     </main>
 
-    <div id="notification" style="position: fixed; bottom: 20px; right: 20px; background-color: #333; color: white; padding: 10px; display: none;"></div>
+    <div id="notification"></div>
 
     <script>
         let editor;
         let socket;
         let workspaceVisible = true;
 
+        // Initialize Monaco Editor
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
             editor = monaco.editor.create(document.getElementById('editor'), {
-                value: "-- Welcome to Re-Exec Ultra Classic\n-- Start coding here...",
+                value: "-- Welcome to Re-Exec Ultra Pro\n-- Start coding here...",
                 language: 'lua',
-                theme: 'vs-dark'
+                theme: 'vs-dark',
+                automaticLayout: true
             });
             loadScripts();
         });
 
-        const encodedIP = window.location.pathname.split('/')[2];
+        // Decode IP address from URL
+        const pathParts = window.location.pathname.split('/');
+        const encodedIP = pathParts[2];
         if (!encodedIP) {
             document.body.innerHTML = '<h2>Invalid or missing IP address!</h2>';
             throw new Error("No IP address provided.");
         }
         const decodedIP = atob(encodedIP);
 
+        // WebSocket connection
+        function connectToWebSocket() {
+            const token = "AbdouGG";
+            socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
+
+            socket.onopen = () => updateConnectionStatus(true);
+            socket.onmessage = () => showNotification('Script executed successfully!');
+            socket.onerror = (error) => {
+                showNotification('Error connecting to server');
+                console.error('WebSocket Error:', error);
+            };
+            socket.onclose = () => {
+                updateConnectionStatus(false);
+                showNotification('Disconnected from server');
+            };
+        }
+
+        // UI update functions
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connection-status');
-            statusElement.textContent = connected ? 'Connected' : 'Not Connected';
-            statusElement.style.color = connected ? 'lightgreen' : 'red';
+            const statusText = document.getElementById('status-text');
+            statusElement.className = connected ? 'connected' : '';
+            statusText.textContent = connected ? 'Connected' : 'Not Connected';
         }
 
         function showNotification(message) {
@@ -205,49 +405,7 @@
             setTimeout(() => notification.style.display = 'none', 3000);
         }
 
-        function clearCode() {
-            editor.setValue('');
-            showNotification('Code cleared');
-        }
-
-        function executeCode() {
-            const code = editor.getValue();
-            if (code.trim() === '') {
-                showNotification('Please enter some code to execute.');
-                return;
-            }
-            if (!socket || socket.readyState !== WebSocket.OPEN) {
-                showNotification('Not connected to server.');
-                return;
-            }
-            socket.send(code);
-            showNotification('Executing code...');
-        }
-
-        function connectToWebSocket() {
-            const token = "AbdouGG";
-            socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
-
-            socket.onopen = function() {
-                updateConnectionStatus(true);
-                showNotification('Connected to server');
-            };
-
-            socket.onmessage = function(event) {
-                showNotification('Script executed successfully!');
-            };
-
-            socket.onerror = function(error) {
-                showNotification('Error connecting to server');
-                console.error('WebSocket Error:', error);
-            };
-
-            socket.onclose = function() {
-                updateConnectionStatus(false);
-                showNotification('Disconnected from server');
-            };
-        }
-
+        // Script management functions
         function saveScript() {
             const scriptName = document.getElementById('scriptName').value.trim();
             const scriptContent = editor.getValue();
@@ -272,12 +430,13 @@
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             
             for (const [name, scriptData] of Object.entries(scripts)) {
-                const li = document.createElement('div');
+                const li = document.createElement('li');
                 li.innerHTML = `
-                    <span>${name} (${scriptData.category})</span>
-                    <button onclick="loadScript('${name}')">Load</button>
-                    <button onclick="renameScript('${name}')">Rename</button>
-                    <button onclick="deleteScript('${name}')">Delete</button>
+                    <span>${name}</span>
+                    <span class="category">${scriptData.category}</span>
+                    <button onclick="loadScript('${name}')"><i class="fas fa-edit"></i></button>
+                    <button onclick="renameScript('${name}')"><i class="fas fa-pencil-alt"></i></button>
+                    <button onclick="deleteScript('${name}')"><i class="fas fa-trash"></i></button>
                 `;
                 scriptList.appendChild(li);
             }
@@ -341,9 +500,12 @@
                 reader.onload = function(e) {
                     const content = e.target.result;
                     const scriptName = file.name.replace('.lua', '');
+                    
                     let category = "General";
                     const categoryMatch = content.match(/-- Category: (.+)/);
-                    if (categoryMatch) category = categoryMatch[1].trim();
+                    if (categoryMatch) {
+                        category = categoryMatch[1].trim();
+                    }
 
                     scripts[scriptName] = { content: content, category: category };
                     importedCount++;
@@ -367,41 +529,65 @@
             scriptList.innerHTML = '';
             for (const [name, scriptData] of Object.entries(scripts)) {
                 if (category === '' || scriptData.category === category) {
-                    const li = document.createElement('div');
+                    const li = document.createElement('li');
                     li.innerHTML = `
-                        <span>${name} (${scriptData.category})</span>
-                        <button onclick="loadScript('${name}')">Load</button>
-                        <button onclick="renameScript('${name}')">Rename</button>
-                        <button onclick="deleteScript('${name}')">Delete</button>
+                        <span>${name}</span>
+                        <span class="category">${scriptData.category}</span>
+                        <button onclick="loadScript('${name}')"><i class="fas fa-edit"></i></button>
+                        <button onclick="renameScript('${name}')"><i class="fas fa-pencil-alt"></i></button>
+                        <button onclick="deleteScript('${name}')"><i class="fas fa-trash"></i></button>
                     `;
                     scriptList.appendChild(li);
                 }
             }
         }
 
-        function goHome() {
-            showNotification('Home functionality not implemented');
-        }
-
-        function openSettings() {
-            showNotification('Settings functionality not implemented');
-        }
-
-        function showHowToUse() {
-            showNotification('How to use functionality not implemented');
-        }
-
-        function joinDiscord() {
-            window.open('https://discord.com', '_blank');
-        }
-
         function toggleWorkspace() {
-            const workspace = document.getElementById('workspace');
             workspaceVisible = !workspaceVisible;
+            const workspace = document.getElementById('workspace');
+            const editorContainer = document.getElementById('editor-container');
+            const toggleBtn = document.getElementById('toggleWorkspaceBtn');
+
             workspace.style.display = workspaceVisible ? 'block' : 'none';
-            document.getElementById('toggleWorkspaceBtn').textContent = workspaceVisible ? 'Hide Workspace' : 'Show Workspace';
+            editorContainer.style.width = workspaceVisible ? 'calc(100% - 250px)' : '100%';
+            toggleBtn.innerHTML = workspaceVisible ? '<i class="fas fa-columns"></i> Hide Workspace' : '<i class="fas fa-columns"></i> Show Workspace';
+
+            setTimeout(() => editor.layout(), 300);
         }
 
+        // Event listeners
+        document.getElementById('executeBtn').addEventListener('click', () => {
+            const code = editor.getValue();
+            if (code.trim() === '') {
+                showNotification('Please enter some code to execute.');
+                return;
+            }
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                showNotification('Not connected to server.');
+                return;
+            }
+            socket.send(code);
+            showNotification('Executing code...');
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            editor.setValue('');
+            showNotification('Code cleared');
+        });
+
+        document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
+        document.getElementById('saveScriptBtn').addEventListener('click', saveScript);
+        document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
+        document.getElementById('importScriptsBtn').addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('importFile').addEventListener('change', importScripts);
+        document.getElementById('scriptCategory').addEventListener('change', filterScripts);
+
+        document.getElementById('homeBtn').addEventListener('click', () => showNotification('Home functionality not implemented'));
+        document.getElementById('settingsBtn').addEventListener('click', () => showNotification('Settings functionality not implemented'));
+        document.getElementById('helpBtn').addEventListener('click', () => showNotification('How to use functionality not implemented'));
+        document.getElementById('discordBtn').addEventListener('click', () => window.open('https://discord.com', '_blank'));
+
+        // Initialize
         connectToWebSocket();
     </script>
 </body>
