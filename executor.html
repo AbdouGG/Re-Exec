@@ -3,164 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Re-Exec Ultra</title>
+    <title>Re-Exec Ultra Pro</title>
     <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-            --bg-color: #0f0f1a;
-            --primary-color: #00a8ff;
-            --secondary-color: #3742fa;
-            --accent-color: #ff3f34;
+            --primary-color: #4a90e2;
+            --secondary-color: #50e3c2;
+            --background-color: #1e1e2e;
+            --surface-color: #2a2a3a;
             --text-color: #ffffff;
-            --dark-bg: #1a1a2e;
+            --accent-color: #ff6b6b;
+            --success-color: #5cb85c;
+            --warning-color: #f0ad4e;
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
             color: var(--text-color);
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        .header {
+        header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .logo {
             display: flex;
             align-items: center;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-color);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .logo img {
-            width: 50px;
-            margin-right: 15px;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            width: 40px;
+            margin-right: 10px;
         }
 
-        .nav-buttons {
-            display: flex;
-            gap: 1rem;
+        .logo h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--text-color);
         }
 
-        .nav-buttons button {
+        nav button, .connection-status {
             background-color: rgba(255, 255, 255, 0.1);
             border: none;
             color: var(--text-color);
-            padding: 0.7rem 1.2rem;
-            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            margin-left: 0.5rem;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 500;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
-        .nav-buttons button:hover {
+        nav button:hover {
             background-color: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        .main-content {
-            flex-grow: 1;
-            padding: 2rem;
+        #connectionStatus {
             display: flex;
-            gap: 2rem;
-            transition: all 0.3s ease;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background-color: var(--warning-color);
+            color: var(--text-color);
         }
 
-        .editor-container {
-            background-color: var(--dark-bg);
-            border-radius: 15px;
-            overflow: hidden;
+        #connectionStatus.connected {
+            background-color: var(--success-color);
+        }
+
+        main {
+            display: flex;
             flex-grow: 1;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+        }
+
+        #editorContainer {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
+            background-color: var(--surface-color);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: width 0.3s ease;
         }
 
-        .editor-header {
+        #editorHeader {
             background-color: rgba(255, 255, 255, 0.05);
             padding: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .editor-title {
+        #editorHeader h2 {
+            margin: 0;
             font-size: 1.2rem;
-            font-weight: 600;
             color: var(--primary-color);
         }
 
-        .editor-controls {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .editor-controls button, .workspace button {
+        #editorControls button {
             background-color: var(--primary-color);
             color: var(--text-color);
             border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            margin-left: 0.5rem;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
-        .editor-controls button:hover, .workspace button:hover {
+        #editorControls button:hover {
             background-color: var(--secondary-color);
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         #editor {
-            height: calc(100vh - 250px);
             flex-grow: 1;
+            min-height: 400px;
         }
 
-        .connection-status {
+        #workspace {
+            width: 300px;
+            background-color: var(--surface-color);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-left: 1rem;
             display: flex;
-            align-items: center;
-            padding: 0.7rem 1.5rem;
-            border-radius: 30px;
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            font-weight: 500;
+            flex-direction: column;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
-        .connection-status.connected {
-            background-color: #2ecc71;
+        #workspace h3 {
+            margin-top: 0;
+            color: var(--primary-color);
         }
 
-        .connection-status i {
-            margin-right: 0.7rem;
+        #scriptName, #scriptCategory {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            color: var(--text-color);
+        }
+
+        #workspaceControls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        #workspaceControls button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #workspaceControls button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        #scriptListContainer {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        #scriptList {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #scriptList li {
+            background-color: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #scriptList li button {
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 0.2rem;
+            transition: all 0.3s ease;
+        }
+
+        #scriptList li button:hover {
+            color: var(--primary-color);
+        }
+
+        .category {
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+            background-color: rgba(80, 227, 194, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
         }
 
         #notification {
@@ -171,206 +232,95 @@
             color: var(--text-color);
             padding: 1rem 1.5rem;
             border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            display: none;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .workspace {
-            width: 250px;
-            background-color: var(--dark-bg);
-            border-radius: 15px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
-
-        .workspace h3 {
-            margin: 0;
-            color: var(--primary-color);
-        }
-
-        .workspace ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            overflow-y: auto;
-            max-height: calc(100vh - 300px);
-        }
-
-        .workspace li {
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .workspace li:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .workspace li button {
-            background-color: transparent;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            padding: 0.2rem;
-            margin-left: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(100%);
+            opacity: 0;
             transition: all 0.3s ease;
         }
 
-        .workspace li button:hover {
-            color: var(--primary-color);
-        }
-
-        #scriptName, #scriptCategory {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none;
-            padding: 0.5rem;
-            border-radius: 5px;
-            color: var(--text-color);
-            width: 100%;
-            margin-bottom: 0.5rem;
-        }
-
-        #scriptCategory {
-            background-color: var(--dark-bg);
-            color: var(--text-color);
-        }
-
-        #scriptCategory option {
-            background-color: var(--dark-bg);
-            color: var(--text-color);
-        }
-
-        #toggleWorkspaceBtn {
-            background-color: var(--secondary-color);
-        }
-
-        #toggleWorkspaceBtn:hover {
-            background-color: var(--primary-color);
-        }
-
-        .category {
-            font-size: 0.8rem;
-            color: var(--primary-color);
-            background-color: rgba(0, 168, 255, 0.1);
-            padding: 0.2rem 0.5rem;
-            border-radius: 10px;
-        }
-
-        .script-list-container {
-            max-height: calc(100vh - 400px); /* Adjust this value as needed */
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-color) var(--dark-bg);
-        }
-
-        .script-list-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .script-list-container::-webkit-scrollbar-track {
-            background: var(--dark-bg);
-        }
-
-        .script-list-container::-webkit-scrollbar-thumb {
-            background-color: var(--primary-color);
-            border-radius: 4px;
-            border: 2px solid var(--dark-bg);
+        #notification.show {
+            transform: translateY(0);
+            opacity: 1;
         }
 
         @media (max-width: 768px) {
-            .header {
+            header {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 1rem;
             }
 
-            .nav-buttons {
-                flex-wrap: wrap;
+            nav {
+                margin-top: 1rem;
             }
 
-            .main-content {
+            main {
                 flex-direction: column;
             }
 
-            .workspace {
-                width: 100% !important;
+            #workspace {
+                width: auto;
+                margin-left: 0;
+                margin-top: 1rem;
             }
 
-            .editor-container {
+            #editorContainer {
                 width: 100% !important;
             }
         }
     </style>
 </head>
 <body>
-    <header class="header">
+    <header>
         <div class="logo">
-            <img src="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&" alt="Logo">
-            Re-Exec Ultra
+            <img src="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&" alt="Re-Exec Ultra Pro Logo">
+            <h1>Re-Exec Ultra Pro</h1>
         </div>
-        <nav class="nav-buttons">
-            <button onclick="goHome()"><i class="fas fa-home"></i> Home</button>
-            <button onclick="openSettings()"><i class="fas fa-cog"></i> Settings</button>
-            <button onclick="showHowToUse()"><i class="fas fa-question-circle"></i> How to use</button>
-            <button onclick="joinDiscord()"><i class="fab fa-discord"></i> Discord</button>
+        <nav>
+            <button id="homeBtn"><i class="fas fa-home"></i> Home</button>
+            <button id="settingsBtn"><i class="fas fa-cog"></i> Settings</button>
+            <button id="howToUseBtn"><i class="fas fa-question-circle"></i> How to Use</button>
+            <button id="discordBtn"><i class="fab fa-discord"></i> Join Discord</button>
         </nav>
-        <div class="connection-status" id="connection-status">
-            <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
+        <div id="connectionStatus">
+            <i class="fas fa-plug"></i> <span>Not Connected</span>
         </div>
     </header>
 
-    <main class="main-content">
-        <div class="editor-container" id="editor-container">
-            <div class="editor-header">
-                <span class="editor-title">Code Editor</span>
-                <div class="editor-controls">
-                    <button onclick="executeCode()"><i class="fas fa-play"></i> Execute</button>
-                    <button onclick="clearCode()"><i class="fas fa-trash"></i> Clear</button>
-                    <button onclick="toggleWorkspace()" id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
+    <main>
+        <div id="editorContainer">
+            <div id="editorHeader">
+                <h2>Code Playground</h2>
+                <div id="editorControls">
+                    <button id="executeBtn"><i class="fas fa-play"></i> Execute</button>
+                    <button id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
+                    <button id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
                 </div>
             </div>
             <div id="editor"></div>
         </div>
-        <div class="workspace" id="workspace">
-            <h3>Workspace</h3>
+        <div id="workspace">
+            <h3>Script Manager</h3>
             <input type="text" id="scriptName" placeholder="Script name">
-            <select id="scriptCategory" onchange="filterScripts()">
+            <select id="scriptCategory">
                 <option value="">All Categories</option>
                 <option value="General">General</option>
                 <option value="Utility">Utility</option>
                 <option value="Game">Game</option>
             </select>
-            <button onclick="saveScript()"><i class="fas fa-save"></i> Save Script</button>
-            <button onclick="exportScripts()"><i class="fas fa-file-export"></i> Export Scripts</button>
-            <input type="file" id="importFile" style="display: none;" onchange="importScripts(event)" multiple>
-            <button onclick="document.getElementById('importFile').click()"><i class="fas fa-file-import"></i> Import Scripts</button>
-            <div class="script-list-container">
+            <div id="workspaceControls">
+                <button id="saveScriptBtn"><i class="fas fa-save"></i> Save</button>
+                <button id="exportScriptsBtn"><i class="fas fa-file-export"></i> Export</button>
+                <button id="importScriptsBtn"><i class="fas fa-file-import"></i> Import</button>
+            </div>
+            <div id="scriptListContainer">
                 <ul id="scriptList"></ul>
             </div>
         </div>
     </main>
 
     <div id="notification"></div>
+
+    <input type="file" id="importFile" style="display: none;" multiple>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
     <script>
@@ -381,7 +331,7 @@
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
             editor = monaco.editor.create(document.getElementById('editor'), {
-                value: "-- Welcome to Re-Exec Ultra\n-- Start coding here...",
+                value: "-- Welcome to Re-Exec Ultra Pro\n-- Start your coding adventure here...",
                 language: 'lua',
                 theme: 'vs-dark',
                 automaticLayout: true
@@ -400,23 +350,22 @@
         const decodedIP = atob(encodedIP);
 
         function updateConnectionStatus(connected) {
-            const statusElement = document.getElementById('connection-status');
-            const statusText = document.getElementById('status-text');
+            const statusElement = document.getElementById('connectionStatus');
             if (connected) {
                 statusElement.classList.add('connected');
-                statusText.textContent = 'Connected';
+                statusElement.innerHTML = '<i class="fas fa-plug"></i> <span>Connected</span>';
             } else {
                 statusElement.classList.remove('connected');
-                statusText.textContent = 'Not Connected';
+                statusElement.innerHTML = '<i class="fas fa-plug"></i> <span>Not Connected</span>';
             }
         }
 
         function showNotification(message) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
-            notification.style.display = 'block';
+            notification.classList.add('show');
             setTimeout(() => {
-                notification.style.display = 'none';
+                notification.classList.remove('show');
             }, 3000);
         }
 
@@ -611,37 +560,18 @@
             }
         }
 
-        function goHome() {
-            showNotification('Home functionality not implemented');
-        }
-
-        function openSettings() {
-            showNotification('Settings functionality not implemented');
-        }
-
-        function showHowToUse() {
-            showNotification('How to use functionality not implemented');
-        }
-
-        function joinDiscord() {
-            window.open('https://discord.com', '_blank');
-        }
-
         function toggleWorkspace() {
+            workspaceVisible = !workspaceVisible;
             const workspace = document.getElementById('workspace');
-            const editorContainer = document.getElementById('editor-container');
+            const editorContainer = document.getElementById('editorContainer');
             const toggleBtn = document.getElementById('toggleWorkspaceBtn');
 
-            workspaceVisible = !workspaceVisible;
-
             if (workspaceVisible) {
-                workspace.style.width = '250px';
-                workspace.style.padding = '1rem';
-                editorContainer.style.width = 'calc(100% - 270px)';
+                workspace.style.display = 'block';
+                editorContainer.style.width = 'calc(100% - 300px)';
                 toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Hide Workspace';
             } else {
-                workspace.style.width = '0';
-                workspace.style.padding = '0';
+                workspace.style.display = 'none';
                 editorContainer.style.width = '100%';
                 toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Show Workspace';
             }
@@ -652,6 +582,20 @@
                 }
             }, 300);
         }
+
+        // Event Listeners
+        document.getElementById('homeBtn').addEventListener('click', () => showNotification('Home functionality not implemented'));
+        document.getElementById('settingsBtn').addEventListener('click', () => showNotification('Settings functionality not implemented'));
+        document.getElementById('howToUseBtn').addEventListener('click', () => showNotification('How to use functionality not implemented'));
+        document.getElementById('discordBtn').addEventListener('click', () => window.open('https://discord.com', '_blank'));
+        document.getElementById('executeBtn').addEventListener('click', executeCode);
+        document.getElementById('clearBtn').addEventListener('click', clearCode);
+        document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
+        document.getElementById('saveScriptBtn').addEventListener('click', saveScript);
+        document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
+        document.getElementById('importScriptsBtn').addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('importFile').addEventListener('change', importScripts);
+        document.getElementById('scriptCategory').addEventListener('change', filterScripts);
 
         connectToWebSocket();
     </script>
