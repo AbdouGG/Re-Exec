@@ -340,49 +340,6 @@
             padding: 8px 16px;
         }
 
-        /* Light Theme */
-        body.light-theme {
-            background-color: #ffffff;
-            color: #000000;
-        }
-
-        /* Dark Theme */
-        body.dark-theme {
-            background-color: #333333;
-            color: #ffffff;
-        }
-
-        /* Custom Theme */
-        body.custom-theme {
-            background-color: #f0f0f0;
-            color: #333333;
-        }
-
-        /* Default Color Scheme */
-        body.default-scheme {
-            --primary-color: #007bff;
-            --secondary-color: #6c757d;
-        }
-
-        /* Blue Color Scheme */
-        body.blue-scheme {
-            --primary-color: #007bff;
-            --secondary-color: #0056b3;
-        }
-
-        /* Red Color Scheme */
-        body.red-scheme {
-            --primary-color: #dc3545;
-            --secondary-color: #c82333;
-        }
-
-        /* Apply variables */
-        header, footer, .btn-primary {
-            background-color: var(--primary-color);
-            color: #fff;
-        }
-
-
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -498,19 +455,19 @@
             
             <h3>Theme Settings</h3>
             <div>
-                <label for="theme-select">Theme:</label>
-                <select id="theme-select">
+                <label for="themeToggle">Theme:</label>
+                <select id="themeToggle">
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
-                    <option value="custom">Custom</option>
                 </select>
             </div>
             <div>
-                <label for="color-scheme-select">Color Scheme:</label>
-                <select id="color-scheme-select">
+                <label for="colorScheme">Color Scheme:</label>
+                <select id="colorScheme">
                     <option value="default">Default</option>
                     <option value="blue">Blue</option>
-                    <option value="red">Red</option>
+                    <option value="green">Green</option>
+                    <option value="purple">Purple</option>
                 </select>
             </div>
             <div>
@@ -897,51 +854,6 @@
             });
 
             // You may need to implement color scheme changes separately
-
-            // Function to apply theme
-            function applyTheme(theme) {
-                document.body.classList.remove('light-theme', 'dark-theme', 'custom-theme');
-                document.body.classList.add(`${theme}-theme`);
-            }
-
-            // Function to apply color scheme
-            function applyColorScheme(scheme) {
-                document.body.classList.remove('default-scheme', 'blue-scheme', 'red-scheme');
-                document.body.classList.add(`${scheme}-scheme`);
-            }
-
-            // Event listeners for the theme and color scheme selectors
-            document.getElementById('theme-select').addEventListener('change', function() {
-                const selectedTheme = this.value;
-                applyTheme(selectedTheme);
-            });
-
-            document.getElementById('color-scheme-select').addEventListener('change', function() {
-                const selectedScheme = this.value;
-                applyColorScheme(selectedScheme);
-            });
-
-            // Optional: Load the saved settings on page load
-            window.addEventListener('load', function() {
-                const savedTheme = localStorage.getItem('theme') || 'light';
-                const savedScheme = localStorage.getItem('color-scheme') || 'default';
-
-                document.getElementById('theme-select').value = savedTheme;
-                document.getElementById('color-scheme-select').value = savedScheme;
-
-                applyTheme(savedTheme);
-                applyColorScheme(savedScheme);
-            });
-
-            // Optional: Save settings to local storage when changed
-            document.getElementById('theme-select').addEventListener('change', function() {
-                localStorage.setItem('theme', this.value);
-            });
-
-            document.getElementById('color-scheme-select').addEventListener('change', function() {
-                localStorage.setItem('color-scheme', this.value);
-            });
-
 
             // Apply other settings as needed
             // For example, you might want to change the default category in the dropdown
