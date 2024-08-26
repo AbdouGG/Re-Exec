@@ -162,7 +162,7 @@
             gap: 0.7rem;
             transition: all 0.3s ease;
             overflow: hidden;
-            max-width: 230px; /* Add this line */
+            max-width: 230px;
         }
 
         #workspace h3 {
@@ -279,15 +279,17 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
         }
 
         .modal-content {
             background-color: var(--dark-bg);
-            margin: 15% auto;
+            margin: 5% auto;
             padding: 20px;
             border: 1px solid var(--primary-color);
             border-radius: 10px;
-            width: 300px;
+            width: 80%;
+            max-width: 600px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
@@ -296,24 +298,42 @@
             margin-top: 0;
         }
 
+        .modal h3 {
+            color: var(--secondary-color);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
         .modal p {
             margin-bottom: 20px;
         }
 
-        .modal input {
+        .modal input[type="text"],
+        .modal input[type="number"],
+        .modal select,
+        .modal textarea {
             width: 100%;
             padding: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid var(--light-bg);
             border-radius: 5px;
             background-color: var(--light-bg);
             color: var(--text-color);
         }
 
+        .modal input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .modal input[type="range"] {
+            width: 100%;
+        }
+
         .modal-buttons {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
+            margin-top: 20px;
         }
 
         .modal button {
@@ -352,6 +372,11 @@
 
             #editor-container {
                 width: 100% !important;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
             }
         }
     </style>
@@ -424,6 +449,97 @@
         </div>
     </div>
 
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h2>Settings</h2>
+            
+            <h3>Theme Settings</h3>
+            <div>
+                <label for="themeToggle">Theme:</label>
+                <select id="themeToggle">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+            <div>
+                <label for="colorScheme">Color Scheme:</label>
+                <select id="colorScheme">
+                    <option value="default">Default</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="purple">Purple</option>
+                </select>
+            </div>
+            <div>
+                <label for="fontSize">Font Size:</label>
+                <input type="range" id="fontSize" min="8" max="24" step="1">
+            </div>
+
+            <h3>Editor Settings</h3>
+            <div>
+                <input type="checkbox" id="autoSave">
+                <label for="autoSave">Auto-save</label>
+            </div>
+            <div>
+                <input type="checkbox" id="autoComplete">
+                <label for="autoComplete">Auto-complete</label>
+            </div>
+            <div>
+                <input type="checkbox" id="lineNumbers">
+                <label for="lineNumbers">Line numbers</label>
+            </div>
+            <div>
+                <input type="checkbox" id="minimap">
+                <label for="minimap">Minimap</label>
+            </div>
+            <div>
+                <label for="tabSize">Tab Size:</label>
+                <input type="number" id="tabSize" min="1" max="8" value="4">
+            </div>
+            <div>
+                <input type="checkbox" id="wordWrap">
+                <label for="wordWrap">Word wrap</label>
+            </div>
+
+            <h3>Script Management</h3>
+            <div>
+                <label for="defaultCategory">Default Category:</label>
+                <select id="defaultCategory">
+                    <option value="general">General</option>
+                    <option value="utility">Utility</option>
+                    <option value="game">Game</option>
+                </select>
+            </div>
+            <div>
+                <label for="autoCategorization">Auto-categorization Rules:</label>
+                <textarea id="autoCategorization" rows="3" placeholder="Enter rules..."></textarea>
+            </div>
+            <div>
+                <button id="backupScripts">Backup Scripts</button>
+                <button id="restoreScripts">Restore Scripts</button>
+            </div>
+
+            <h3>Connection Settings</h3>
+            <div>
+                <label for="defaultServer">Default Server Address:</label>
+                <input type="text" id="defaultServer" placeholder="Enter server address...">
+            </div>
+            <div>
+                <label for="connectionTimeout">Connection Timeout (seconds):</label>
+                <input type="number" id="connectionTimeout" min="1" max="60" value="30">
+            </div>
+            <div>
+                <label for="reconnectAttempts">Reconnect Attempts:</label>
+                <input type="number" id="reconnectAttempts" min="0" max="10" value="3">
+            </div>
+
+            <div class="modal-buttons">
+                <button id="saveSettings">Save Settings</button>
+                <button id="closeSettings">Close</button>
+            </div>
+        </div>
+    </div>
+
     <div id="notification"></div>
 
     <script>
@@ -440,6 +556,7 @@
                 automaticLayout: true
             });
             loadScripts();
+            loadSettings();
         });
 
         const pathParts = window.location.pathname.split('/');
@@ -526,25 +643,51 @@
         }
 
         function renameScript(oldName) {
-            const newName = prompt('Enter new name for the script:', oldName);
-            if (newName && newName !== oldName) {
-                const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-                scripts[newName] = scripts[oldName];
-                delete scripts[oldName];
-                localStorage.setItem('scripts', JSON.stringify(scripts));
-                loadScripts();
-                showNotification(`Script renamed to: ${newName}`);
-            }
+            const renameModal = document.getElementById('renameModal');
+            const oldScriptName = document.getElementById('oldScriptName');
+            const newScriptName = document.getElementById('newScriptName');
+            
+            oldScriptName.textContent = oldName;
+            newScriptName.value = oldName;
+            renameModal.style.display = 'block';
+
+            document.getElementById('confirmRename').onclick = function() {
+                const newName = newScriptName.value.trim();
+                if (newName && newName !== oldName) {
+                    const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                    scripts[newName] = scripts[oldName];
+                    delete scripts[oldName];
+                    localStorage.setItem('scripts', JSON.stringify(scripts));
+                    loadScripts();
+                    showNotification(`Script renamed to: ${newName}`);
+                }
+                renameModal.style.display = 'none';
+            };
+
+            document.getElementById('cancelRename').onclick = function() {
+                renameModal.style.display = 'none';
+            };
         }
 
         function deleteScript(name) {
-            if (confirm(`Are you sure you want to delete the script: ${name}?`)) {
+            const deleteModal = document.getElementById('deleteModal');
+            const deleteScriptName = document.getElementById('deleteScriptName');
+            
+            deleteScriptName.textContent = name;
+            deleteModal.style.display = 'block';
+
+            document.getElementById('confirmDelete').onclick = function() {
                 const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
                 delete scripts[name];
                 localStorage.setItem('scripts', JSON.stringify(scripts));
                 loadScripts();
                 showNotification(`Script deleted: ${name}`);
-            }
+                deleteModal.style.display = 'none';
+            };
+
+            document.getElementById('cancelDelete').onclick = function() {
+                deleteModal.style.display = 'none';
+            };
         }
 
         function exportScripts() {
@@ -643,70 +786,81 @@
             }, 300);
         }
 
-        function deleteScript(name) {
-            const deleteModal = document.getElementById('deleteModal');
-            const deleteScriptName = document.getElementById('deleteScriptName');
-            const confirmDelete = document.getElementById('confirmDelete');
-            const cancelDelete = document.getElementById('cancelDelete');
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+            
+            // Theme settings
+            document.getElementById('themeToggle').value = settings.theme || 'dark';
+            document.getElementById('colorScheme').value = settings.colorScheme || 'default';
+            document.getElementById('fontSize').value = settings.fontSize || '14';
 
-            deleteScriptName.textContent = name;
-            deleteModal.style.display = 'block';
+            // Editor settings
+            document.getElementById('autoSave').checked = settings.autoSave || false;
+            document.getElementById('autoComplete').checked = settings.autoComplete !== false;
+            document.getElementById('lineNumbers').checked = settings.lineNumbers !== false;
+            document.getElementById('minimap').checked = settings.minimap || false;
+            document.getElementById('tabSize').value = settings.tabSize || '4';
+            document.getElementById('wordWrap').checked = settings.wordWrap || false;
 
-            confirmDelete.onclick = function() {
-                const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-                delete scripts[name];
-                localStorage.setItem('scripts', JSON.stringify(scripts));
-                loadScripts();
-                showNotification(`Script deleted: ${name}`);
-                deleteModal.style.display = 'none';
-            };
+            // Script management
+            document.getElementById('defaultCategory').value = settings.defaultCategory || 'general';
+            document.getElementById('autoCategorization').value = settings.autoCategorization || '';
 
-            cancelDelete.onclick = function() {
-                deleteModal.style.display = 'none';
-            };
+            // Connection settings
+            document.getElementById('defaultServer').value = settings.defaultServer || '';
+            document.getElementById('connectionTimeout').value = settings.connectionTimeout || '30';
+            document.getElementById('reconnectAttempts').value = settings.reconnectAttempts || '3';
+
+            applySettings();
         }
 
-        function renameScript(oldName) {
-            const renameModal = document.getElementById('renameModal');
-            const oldScriptName = document.getElementById('oldScriptName');
-            const newScriptName = document.getElementById('newScriptName');
-            const confirmRename = document.getElementById('confirmRename');
-            const cancelRename = document.getElementById('cancelRename');
-
-            oldScriptName.textContent = oldName;
-            newScriptName.value = oldName;
-            renameModal.style.display = 'block';
-
-            confirmRename.onclick = function() {
-                const newName = newScriptName.value.trim();
-                if (newName && newName !== oldName) {
-                    const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-                    scripts[newName] = scripts[oldName];
-                    delete scripts[oldName];
-                    localStorage.setItem('scripts', JSON.stringify(scripts));
-                    loadScripts();
-                    showNotification(`Script renamed to: ${newName}`);
-                }
-                renameModal.style.display = 'none';
+        function saveSettings() {
+            const settings = {
+                theme: document.getElementById('themeToggle').value,
+                colorScheme: document.getElementById('colorScheme').value,
+                fontSize: document.getElementById('fontSize').value,
+                autoSave: document.getElementById('autoSave').checked,
+                autoComplete: document.getElementById('autoComplete').checked,
+                lineNumbers: document.getElementById('lineNumbers').checked,
+                minimap: document.getElementById('minimap').checked,
+                tabSize: document.getElementById('tabSize').value,
+                wordWrap: document.getElementById('wordWrap').checked,
+                defaultCategory: document.getElementById('defaultCategory').value,
+                autoCategorization: document.getElementById('autoCategorization').value,
+                defaultServer: document.getElementById('defaultServer').value,
+                connectionTimeout: document.getElementById('connectionTimeout').value,
+                reconnectAttempts: document.getElementById('reconnectAttempts').value
             };
 
-            cancelRename.onclick = function() {
-                renameModal.style.display = 'none';
-            };
+            localStorage.setItem('settings', JSON.stringify(settings));
+            applySettings();
+            showNotification('Settings saved successfully');
+            document.getElementById('settingsModal').style.display = 'none';
         }
 
-        // Add this function to close modals when clicking outside
-        window.onclick = function(event) {
-            const deleteModal = document.getElementById('deleteModal');
-            const renameModal = document.getElementById('renameModal');
-            if (event.target == deleteModal) {
-                deleteModal.style.display = 'none';
-            }
-            if (event.target == renameModal) {
-                renameModal.style.display = 'none';
-            }
+        function applySettings() {
+            const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+
+            // Apply theme
+            document.body.className = settings.theme === 'light' ? 'light-theme' : 'dark-theme';
+
+            // Apply editor settings
+            editor.updateOptions({
+                fontSize: parseInt(settings.fontSize),
+                minimap: { enabled: settings.minimap },
+                lineNumbers: settings.lineNumbers ? 'on' : 'off',
+                tabSize: parseInt(settings.tabSize),
+                wordWrap: settings.wordWrap ? 'on' : 'off'
+            });
+
+            // You may need to implement color scheme changes separately
+
+            // Apply other settings as needed
+            // For example, you might want to change the default category in the dropdown
+            document.getElementById('scriptCategory').value = settings.defaultCategory || '';
         }
 
+        // Event Listeners
         document.getElementById('executeBtn').addEventListener('click', () => {
             const code = editor.getValue();
             if (code.trim() === '') {
@@ -734,9 +888,26 @@
         document.getElementById('scriptCategory').addEventListener('change', filterScripts);
 
         document.getElementById('homeBtn').addEventListener('click', () => showNotification('Home functionality not implemented'));
-        document.getElementById('settingsBtn').addEventListener('click', () => showNotification('Settings functionality not implemented'));
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            document.getElementById('settingsModal').style.display = 'block';
+        });
         document.getElementById('helpBtn').addEventListener('click', () => showNotification('How to use functionality not implemented'));
         document.getElementById('discordBtn').addEventListener('click', () => window.open('https://discord.com', '_blank'));
+
+        document.getElementById('saveSettings').addEventListener('click', saveSettings);
+        document.getElementById('closeSettings').addEventListener('click', () => {
+            document.getElementById('settingsModal').style.display = 'none';
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
 
         connectToWebSocket();
     </script>
