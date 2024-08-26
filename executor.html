@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
     <style>
         :root {
+            /* Dark theme (default) */
             --bg-color: #1e1e2e;
             --primary-color: #89b4fa;
             --secondary-color: #f38ba8;
@@ -18,6 +19,33 @@
             --light-bg: #313244;
             --success-color: #a6e3a1;
             --error-color: #f38ba8;
+        }
+
+        body.light-theme {
+            --bg-color: #f0f0f0;
+            --primary-color: #3584e4;
+            --secondary-color: #e01b24;
+            --text-color: #2e3436;
+            --dark-bg: #d3d7cf;
+            --light-bg: #ffffff;
+            --success-color: #33d17a;
+            --error-color: #e01b24;
+        }
+
+        /* Color schemes */
+        body.blue-scheme {
+            --primary-color: #3584e4;
+            --secondary-color: #62a0ea;
+        }
+
+        body.green-scheme {
+            --primary-color: #33d17a;
+            --secondary-color: #57e389;
+        }
+
+        body.purple-scheme {
+            --primary-color: #9141ac;
+            --secondary-color: #c061cb;
         }
 
         body {
@@ -557,6 +585,7 @@
             });
             loadScripts();
             loadSettings();
+            applySettings();
         });
 
         const pathParts = window.location.pathname.split('/');
@@ -567,9 +596,10 @@
         }
         const decodedIP = atob(encodedIP);
 
-        function connectToWebSocket() {
+        function connectToWebSocket(server = decodedIP, timeout = 30, attempts = 3) {
             const token = "AbdouGG";
-            socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
+            const wsAddress = server || decodedIP;
+            socket = new WebSocket(`ws://${wsAddress}:7890/Execute?token=${token}`);
 
             socket.onopen = () => updateConnectionStatus(true);
             socket.onmessage = () => showNotification('Script executed successfully!');
@@ -580,7 +610,16 @@
             socket.onclose = () => {
                 updateConnectionStatus(false);
                 showNotification('Disconnected from server');
+                if (attempts > 0) {
+                    setTimeout(() => connectToWebSocket(server, timeout, attempts - 1), timeout * 1000);
+                }
             };
+
+            setTimeout(() => {
+                if (socket.readyState === WebSocket.CONNECTING) {
+                    socket.close();
+                }
+            }, timeout * 1000);
         }
 
         function updateConnectionStatus(connected) {
@@ -789,29 +828,20 @@
         function loadSettings() {
             const settings = JSON.parse(localStorage.getItem('settings') || '{}');
             
-            // Theme settings
             document.getElementById('themeToggle').value = settings.theme || 'dark';
             document.getElementById('colorScheme').value = settings.colorScheme || 'default';
             document.getElementById('fontSize').value = settings.fontSize || '14';
-
-            // Editor settings
             document.getElementById('autoSave').checked = settings.autoSave || false;
             document.getElementById('autoComplete').checked = settings.autoComplete !== false;
             document.getElementById('lineNumbers').checked = settings.lineNumbers !== false;
             document.getElementById('minimap').checked = settings.minimap || false;
             document.getElementById('tabSize').value = settings.tabSize || '4';
             document.getElementById('wordWrap').checked = settings.wordWrap || false;
-
-            // Script management
             document.getElementById('defaultCategory').value = settings.defaultCategory || 'general';
             document.getElementById('autoCategorization').value = settings.autoCategorization || '';
-
-            // Connection settings
             document.getElementById('defaultServer').value = settings.defaultServer || '';
             document.getElementById('connectionTimeout').value = settings.connectionTimeout || '30';
             document.getElementById('reconnectAttempts').value = settings.reconnectAttempts || '3';
-
-            applySettings();
         }
 
         function saveSettings() {
@@ -841,23 +871,38 @@
         function applySettings() {
             const settings = JSON.parse(localStorage.getItem('settings') || '{}');
 
-            // Apply theme
-            document.body.className = settings.theme === 'light' ? 'light-theme' : 'dark-theme';
+            document.body.className = settings.theme === 'light' ? 'light-theme' : '';
 
-            // Apply editor settings
+            document.body.classList.remove('blue-scheme', 'green-scheme', 'purple-scheme');
+            if (settings.colorScheme !== 'default') {
+                document.body.classList.add(`${settings.colorScheme}-scheme`);
+            }
+
             editor.updateOptions({
                 fontSize: parseInt(settings.fontSize),
                 minimap: { enabled: settings.minimap },
                 lineNumbers: settings.lineNumbers ? 'on' : 'off',
                 tabSize: parseInt(settings.tabSize),
-                wordWrap: settings.wordWrap ? 'on' : 'off'
+                wordWrap: settings.wordWrap ? 'on' : 'off',
+                autoClosingBrackets: settings.autoComplete ? 'always' : 'never',
+                autoClosingQuotes: settings.autoComplete ? 'always' : 'never',
+                autoSurround: settings.autoComplete ? 'always' : 'never'
             });
 
-            // You may need to implement color scheme changes separately
+            if (settings.autoSave) {
+                setInterval(saveScript, 30000);
+            }
 
-            // Apply other settings as needed
-            // For example, you might want to change the default category in the dropdown
             document.getElementById('scriptCategory').value = settings.defaultCategory || '';
+
+            if (socket) {
+                socket.close();
+            }
+            connectToWebSocket(settings.defaultServer, settings.connectionTimeout, settings.reconnectAttempts);
+
+            document.body.style.fontSize = `${settings.fontSize}px`;
+
+            editor.layout();
         }
 
         // Event Listeners
