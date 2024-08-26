@@ -162,6 +162,7 @@
             gap: 0.7rem;
             transition: all 0.3s ease;
             overflow: hidden;
+            max-width: 230px; /* Add this line */
         }
 
         #workspace h3 {
@@ -548,14 +549,16 @@
             const editorContainer = document.getElementById('editor-container');
             const toggleBtn = document.getElementById('toggleWorkspaceBtn');
 
-            workspace.style.transition = 'width 0.3s ease-in-out';
+            workspace.style.transition = 'max-width 0.3s ease-in-out, padding 0.3s ease-in-out';
             editorContainer.style.transition = 'width 0.3s ease-in-out';
 
             if (workspaceVisible) {
-                workspace.style.width = '250px';
+                workspace.style.maxWidth = '230px';
+                workspace.style.padding = '0.7rem';
                 editorContainer.style.width = 'calc(100% - 250px)';
             } else {
-                workspace.style.width = '0';
+                workspace.style.maxWidth = '0';
+                workspace.style.padding = '0';
                 editorContainer.style.width = '100%';
             }
 
