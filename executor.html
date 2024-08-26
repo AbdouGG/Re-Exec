@@ -81,13 +81,116 @@
 
         .main-content {
             flex-grow: 1;
+            padding: 2rem;
             display: flex;
+            gap: 2rem;
             transition: all 0.3s ease;
+        }
+
+        .editor-container {
+            background-color: var(--dark-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            flex-grow: 1;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+        }
+
+        .editor-header {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .editor-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .editor-controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .editor-controls button, .workspace button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .editor-controls button:hover, .workspace button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #editor {
+            height: calc(100vh - 250px);
+            flex-grow: 1;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1.5rem;
+            border-radius: 30px;
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .connection-status.connected {
+            background-color: #2ecc71;
+        }
+
+        .connection-status i {
+            margin-right: 0.7rem;
+        }
+
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         .workspace {
             width: 250px;
             background-color: var(--dark-bg);
+            border-radius: 15px;
             padding: 1rem;
             display: flex;
             flex-direction: column;
@@ -137,108 +240,6 @@
             color: var(--primary-color);
         }
 
-        .editor-container {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            transition: width 0.3s ease;
-        }
-
-        .editor-header {
-            background-color: rgba(255, 255, 255, 0.05);
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .editor-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .editor-controls {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .editor-controls button, .workspace button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .editor-controls button:hover, .workspace button:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        #editor {
-            flex-grow: 1;
-        }
-
-        footer {
-            background-color: var(--dark-bg);
-            padding: 1rem;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            padding: 0.7rem 1.5rem;
-            border-radius: 30px;
-            background-color: var(--accent-color);
-            color: var(--text-color);
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .connection-status.connected {
-            background-color: #2ecc71;
-        }
-
-        .connection-status i {
-            margin-right: 0.7rem;
-        }
-
-        #notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            padding: 1rem 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            display: none;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
         #scriptName, #scriptCategory {
             background-color: rgba(255, 255, 255, 0.1);
             border: none;
@@ -276,7 +277,7 @@
         }
 
         .script-list-container {
-            max-height: calc(100vh - 400px);
+            max-height: calc(100vh - 400px); /* Adjust this value as needed */
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: var(--primary-color) var(--dark-bg);
@@ -333,9 +334,23 @@
             <button onclick="showHowToUse()"><i class="fas fa-question-circle"></i> How to use</button>
             <button onclick="joinDiscord()"><i class="fab fa-discord"></i> Discord</button>
         </nav>
+        <div class="connection-status" id="connection-status">
+            <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
+        </div>
     </header>
 
     <main class="main-content">
+        <div class="editor-container" id="editor-container">
+            <div class="editor-header">
+                <span class="editor-title">Code Editor</span>
+                <div class="editor-controls">
+                    <button onclick="executeCode()"><i class="fas fa-play"></i> Execute</button>
+                    <button onclick="clearCode()"><i class="fas fa-trash"></i> Clear</button>
+                    <button onclick="toggleWorkspace()" id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
+                </div>
+            </div>
+            <div id="editor"></div>
+        </div>
         <div class="workspace" id="workspace">
             <h3>Workspace</h3>
             <input type="text" id="scriptName" placeholder="Script name">
@@ -353,24 +368,7 @@
                 <ul id="scriptList"></ul>
             </div>
         </div>
-        <div class="editor-container" id="editor-container">
-            <div class="editor-header">
-                <span class="editor-title">Code Editor</span>
-                <div class="editor-controls">
-                    <button onclick="executeCode()"><i class="fas fa-play"></i> Execute</button>
-                    <button onclick="clearCode()"><i class="fas fa-trash"></i> Clear</button>
-                    <button onclick="toggleWorkspace()" id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
-                </div>
-            </div>
-            <div id="editor"></div>
-        </div>
     </main>
-
-    <footer>
-        <div class="connection-status" id="connection-status">
-            <i class="fas fa-plug"></i> <span id="status-text">Not Connected</span>
-        </div>
-    </footer>
 
     <div id="notification"></div>
 
@@ -637,11 +635,13 @@
             workspaceVisible = !workspaceVisible;
 
             if (workspaceVisible) {
-                workspace.style.display = 'block';
-                editorContainer.style.width = 'calc(100% - 250px)';
+                workspace.style.width = '250px';
+                workspace.style.padding = '1rem';
+                editorContainer.style.width = 'calc(100% - 270px)';
                 toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Hide Workspace';
             } else {
-                workspace.style.display = 'none';
+                workspace.style.width = '0';
+                workspace.style.padding = '0';
                 editorContainer.style.width = '100%';
                 toggleBtn.innerHTML = '<i class="fas fa-columns"></i> Show Workspace';
             }
