@@ -275,6 +275,27 @@
             border-radius: 10px;
         }
 
+        .script-list-container {
+            max-height: calc(100vh - 400px); /* Adjust this value as needed */
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--dark-bg);
+        }
+
+        .script-list-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .script-list-container::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        .script-list-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            border: 2px solid var(--dark-bg);
+        }
+
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
@@ -342,7 +363,9 @@
             <button onclick="exportScripts()"><i class="fas fa-file-export"></i> Export Scripts</button>
             <input type="file" id="importFile" style="display: none;" onchange="importScripts(event)" multiple>
             <button onclick="document.getElementById('importFile').click()"><i class="fas fa-file-import"></i> Import Scripts</button>
-            <ul id="scriptList"></ul>
+            <div class="script-list-container">
+                <ul id="scriptList"></ul>
+            </div>
         </div>
     </main>
 
@@ -542,7 +565,6 @@
                     const content = e.target.result;
                     const scriptName = file.name.replace('.lua', '');
                     
-                    // Extract category if present, otherwise set as "General"
                     let category = "General";
                     const categoryMatch = content.match(/-- Category: (.+)/);
                     if (categoryMatch) {
