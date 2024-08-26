@@ -553,24 +553,6 @@
                 <button id="restoreScripts">Restore Scripts</button>
             </div>
 
-            <h3>Connection Settings</h3>
-            <div>
-                <input type="checkbox" id="enableConnection">
-                <label for="enableConnection">Enable Connection</label>
-            </div>
-            <div>
-                <label for="defaultServer">Default Server Address:</label>
-                <input type="text" id="defaultServer" placeholder="Enter server address...">
-            </div>
-            <div>
-                <label for="connectionTimeout">Connection Timeout (seconds):</label>
-                <input type="number" id="connectionTimeout" min="1" max="60" value="30">
-            </div>
-            <div>
-                <label for="reconnectAttempts">Reconnect Attempts:</label>
-                <input type="number" id="reconnectAttempts" min="0" max="10" value="3">
-            </div>
-
             <div class="modal-buttons">
                 <button id="saveSettings">Save Settings</button>
                 <button id="closeSettings">Close</button>
@@ -608,30 +590,29 @@
         }
         const decodedIP = atob(encodedIP);
 
-        function connectToWebSocket(server = decodedIP, timeout = 30, attempts = 3) {
+        function connectToWebSocket() {
             const token = "AbdouGG";
-            const wsAddress = server || decodedIP;
-            socket = new WebSocket(`ws://${wsAddress}:7890/Execute?token=${token}`);
+            socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
-            socket.onopen = () => updateConnectionStatus(true);
-            socket.onmessage = () => showNotification('Script executed successfully!');
-            socket.onerror = (error) => {
+            socket.onopen = function() {
+                updateConnectionStatus(true);
+                showNotification('Connected to server');
+            };
+
+            socket.onmessage = function(event) {
+                showNotification('Script executed successfully!');
+            };
+
+            socket.onerror = function(error) {
                 showNotification('Error connecting to server');
                 console.error('WebSocket Error:', error);
             };
-            socket.onclose = () => {
+
+            socket.onclose = function() {
                 updateConnectionStatus(false);
                 showNotification('Disconnected from server');
-                if (attempts > 0) {
-                    setTimeout(() => connectToWebSocket(server, timeout, attempts - 1), timeout * 1000);
-                }
+                console.log('WebSocket connection closed');
             };
-
-            setTimeout(() => {
-                if (socket.readyState === WebSocket.CONNECTING) {
-                    socket.close();
-                }
-            }, timeout * 1000);
         }
 
         function updateConnectionStatus(connected) {
@@ -855,10 +836,6 @@
             document.getElementById('wordWrap').checked = settings.wordWrap || false;
             document.getElementById('defaultCategory').value = settings.defaultCategory || 'general';
             document.getElementById('autoCategorization').value = settings.autoCategorization || '';
-            document.getElementById('defaultServer').value = settings.defaultServer || '';
-            document.getElementById('connectionTimeout').value = settings.connectionTimeout || '30';
-            document.getElementById('reconnectAttempts').value = settings.reconnectAttempts || '3';
-            document.getElementById('enableConnection').checked = settings.enableConnection !== false;
         }
 
         function saveSettings() {
@@ -875,10 +852,6 @@
                 wordWrap: document.getElementById('wordWrap').checked,
                 defaultCategory: document.getElementById('defaultCategory').value,
                 autoCategorization: document.getElementById('autoCategorization').value,
-                defaultServer: document.getElementById('defaultServer').value,
-                connectionTimeout: document.getElementById('connectionTimeout').value,
-                reconnectAttempts: document.getElementById('reconnectAttempts').value,
-                enableConnection: document.getElementById('enableConnection').checked
             };
 
             localStorage.setItem('settings', JSON.stringify(settings));
@@ -918,15 +891,6 @@
 
             document.getElementById('scriptCategory').value = settings.defaultCategory || '';
 
-            if (settings.enableConnection) {
-                if (socket) {
-                    socket.close();
-                }
-                connectToWebSocket(settings.defaultServer, settings.connectionTimeout, settings.reconnectAttempts);
-            } else if (socket) {
-                socket.close();
-                updateConnectionStatus(false);
-            }
 
             document.body.style.fontSize = `${settings.fontSize}px`;
 
