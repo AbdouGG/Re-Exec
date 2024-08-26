@@ -3,349 +3,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Re-Exec</title>
-    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/944246656646402049/1276988049082810430/Re.png?ex=66cb874c&is=66ca35cc&hm=337b2915d2b996f85fd6bc9cf2f3d82e883cdbfe3caf7082121e4dcd55540eff&">
+    <title>Re-Exec - Repower Your Emulation</title>
+    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Global Styles */
-        body {
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #00c3ff;
+            --background-dark: #0a0e17;
+            --background-light: #1a1f2e;
+            --text-color: #ffffff;
+        }
+
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
             font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #1a1a1a, #111);
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+            background: var(--background-dark);
+            color: var(--text-color);
+            line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Header */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
         .header {
-            width: 99%;
-            background-color: #1c1c1c;
-            padding: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            background: rgba(26, 31, 46, 0.8);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            padding: 10px 0;
+            transition: all 0.3s ease;
+        }
+
+        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
         }
 
-        .header .logo {
+        .logo {
             display: flex;
             align-items: center;
         }
 
-        .header .logo img {
-            width: 40px;
-            height: 40px;
+        .logo img {
+            width: 50px;
+            height: 50px;
             margin-right: 15px;
         }
 
-        .header .logo span {
-            font-size: 26px;
+        .logo span {
+            font-size: 24px;
             font-weight: bold;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .header nav {
+        .nav-links {
             display: flex;
             gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
         }
 
-        .header nav a {
-            color: #ccc;
+        .nav-links a {
+            color: var(--text-color);
             text-decoration: none;
-            font-size: 18px;
+            font-weight: 500;
             transition: color 0.3s ease;
+            font-size: 16px;
         }
 
-        .header nav a:hover {
-            color: #007bff;
+        .nav-links a:hover {
+            color: var(--primary-color);
         }
 
-        /* Main Content */
-        .main-content {
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 80px 20px;
-            max-width: 1200px;
-            width: 100%;
+            position: relative;
+            overflow: hidden;
+            padding: 60px 20px;
         }
 
-        .main-content h1 {
-            font-size: 4vw;
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://source.unsplash.com/random/1920x1080?tech') no-repeat center center/cover;
+            filter: brightness(0.3);
+            z-index: -1;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
             margin-bottom: 20px;
+            animation: fadeInUp 1s ease;
         }
 
-        .main-content p {
-            font-size: 1.5vw;
+        .hero p {
+            font-size: 1rem;
             margin-bottom: 30px;
-            color: #ccc;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            animation: fadeInUp 1s ease 0.2s;
         }
 
-        .download-button {
-            background-color: #007bff;
-            color: #fff;
-            padding: 15px 30px;
+        .cta-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            animation: fadeInUp 1s ease 0.4s;
+        }
+
+        .button {
+            padding: 12px 20px;
             border-radius: 30px;
             text-decoration: none;
             font-weight: bold;
-            display: inline-block;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.5);
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            font-size: 1.2vw;
-        }
-
-        .download-button:hover {
-            background-color: #0056b3;
-            transform: translateY(-3px);
-        }
-
-        /* Features Section */
-        .features-section {
-            padding: 60px 20px;
-            background-color: #222;
-            width: 100%;
-            display: flex;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
-            flex-wrap: wrap;
-            gap: 40px;
+            gap: 10px;
+            font-size: 14px;
         }
 
-        .feature {
-            background-color: #1c1c1c;
-            padding: 30px;
+        .button-primary {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: var(--text-color);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        .button-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+        }
+
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .button-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .features {
+            padding: 60px 0;
+            background: var(--background-light);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            flex: 1 1 calc(33.333% - 80px);
-            max-width: 300px;
-            min-width: 280px;
-            text-align: left;
-            transition: transform 0.3s ease;
-        }
-
-        .feature:hover {
-            transform: translateY(-5px);
-        }
-
-        .feature h2 {
-            font-size: 2vw;
-            margin-bottom: 15px;
-        }
-
-        .feature p {
-            color: #ccc;
-            font-size: 1.2vw;
-        }
-
-        /* Testimonials Section */
-        .testimonials-section {
-            padding: 60px 20px;
-            text-align: center;
-            background-color: #111;
-            width: 100%;
-        }
-
-        .testimonials-section h2 {
-            font-size: 3vw;
-            margin-bottom: 30px;
-        }
-
-        .testimonial {
-            max-width: 800px;
-            margin: 0 auto 40px auto;
-            font-size: 1.5vw;
-            color: #ccc;
-            position: relative;
-            padding-left: 50px;
-        }
-
-        .testimonial::before {
-            content: '“';
-            font-size: 4vw;
-            color: #007bff;
-            position: absolute;
-            left: 0;
-            top: -10px;
-        }
-
-        .testimonial cite {
-            display: block;
-            margin-top: 10px;
-            font-size: 1.2vw;
-            color: #fff;
-            font-style: normal;
-        }
-
-        /* Footer */
-        .footer {
-            width: 100%;
-            background-color: #1c1c1c;
             padding: 20px;
             text-align: center;
-            margin-top: auto;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .feature-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            background: var(--background-light);
+            padding: 30px 0;
+            text-align: center;
         }
 
         .footer p {
-            color: #ccc;
-            font-size: 1vw;
+            margin-bottom: 15px;
+            font-size: 14px;
         }
 
-        .footer a {
-            color: #007bff;
-            text-decoration: none;
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .social-links a {
+            color: var(--text-color);
+            font-size: 1.2rem;
             transition: color 0.3s ease;
         }
 
-        .footer a:hover {
-            color: #0056b3;
+        .social-links a:hover {
+            color: var(--primary-color);
         }
 
-        /* Media Queries for Responsiveness */
-        @media (max-width: 768px) {
-            .header {
-                flex-direction: column;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-
-            .main-content h1 {
-                font-size: 8vw;
-            }
-
-            .main-content p {
-                font-size: 4vw;
-            }
-
-            .download-button {
-                font-size: 4vw;
-                padding: 10px 20px;
-            }
-
-            .feature {
-                flex: 1 1 100%;
-                max-width: 100%;
-            }
-
-            .feature h2 {
-                font-size: 6vw;
-            }
-
-            .feature p {
-                font-size: 4vw;
-            }
-
-            .testimonials-section h2 {
-                font-size: 6vw;
-            }
-
-            .testimonial {
-                font-size: 4vw;
-            }
-
-            .testimonial::before {
-                font-size: 8vw;
-            }
-
-            .footer p {
-                font-size: 3vw;
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        @media (max-width: 480px) {
-            .main-content h1 {
-                font-size: 10vw;
+        @media (min-width: 768px) {
+            .hero h1 {
+                font-size: 3.5rem;
             }
 
-            .main-content p {
-                font-size: 5vw;
+            .hero p {
+                font-size: 1.2rem;
             }
 
-            .download-button {
-                font-size: 5vw;
-                padding: 10px 15px;
+            .cta-buttons {
+                flex-direction: row;
+                justify-content: center;
             }
 
-            .testimonials-section h2 {
-                font-size: 8vw;
-            }
-
-            .testimonial {
-                font-size: 5vw;
-            }
-
-            .testimonial::before {
-                font-size: 10vw;
-            }
-
-            .footer p {
-                font-size: 4vw;
+            .features-grid {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
 </head>
 <body>
     <header class="header">
-        <div class="logo">
-            <img src="https://cdn.discordapp.com/attachments/944246656646402049/1276988049082810430/Re.png?ex=66cb874c&is=66ca35cc&hm=337b2915d2b996f85fd6bc9cf2f3d82e883cdbfe3caf7082121e4dcd55540eff&" alt="Re-Exec Logo">
-            <span>Re-Exec</span>
+        <div class="container header-content">
+            <div class="logo">
+                <img src="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&" alt="Re-Exec Logo">
+                <span>Re-Exec</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#download">Download</a>
+                <a href="#contact">Contact</a>
+            </nav>
         </div>
-        
     </header>
 
-    <main class="main-content">
-        <h1>Repower Your Emulation</h1>
-        <p>Re-Exec: The free, powerful inject tool for your emulation or mobile needs. Experience unmatched speed, advanced scripting, and seamless compatibility.</p>
-        <a href="#" class="download-button">Download for Windows</a>
+    <main>
+        <section class="hero">
+            <div class="container hero-content">
+                <h1>Repower Your Emulation</h1>
+                <p>Experience unmatched speed, advanced scripting, and seamless compatibility with Re-Exec - the ultimate free inject tool for your emulation needs.</p>
+                <div class="cta-buttons">
+                    <a href="#" class="button button-primary" id="downloadButton"><i class="fas fa-download"></i> Download for Windows</a>
+                    <a href="https://discord.gg/your-discord-invite-code" target="_blank" class="button button-secondary"><i class="fab fa-discord"></i> Join Discord</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-bolt feature-icon"></i>
+                        <h3>Fast Injection</h3>
+                        <p>Lightning-fast injection processes that won't interrupt your gaming sessions.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-code feature-icon"></i>
+                        <h3>Advanced Scripting</h3>
+                        <p>Create complex scripts with ease, thanks to our robust scripting support.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-puzzle-piece feature-icon"></i>
+                        <h3>Wide Compatibility</h3>
+                        <p>Compatible with all major emulators, ensuring seamless integration.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <section class="features-section">
-        <div class="feature">
-            <h2>Fast Injection</h2>
-            <p>Experience lightning-fast injection processes that won't interrupt your gaming sessions.</p>
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Re-Exec. All Rights Reserved.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="https://discord.gg/your-discord-invite-code" target="_blank"><i class="fab fa-discord"></i></a>
+                <a href="#"><i class="fab fa-github"></i></a>
+            </div>
         </div>
-        <div class="feature">
-            <h2>Advanced Scripting</h2>
-            <p>Create complex scripts with ease, thanks to our robust scripting support.</p>
-        </div>
-        <div class="feature">
-            <h2>Wide Compatibility</h2>
-            <p>Compatible with all major emulators, ensuring seamless integration.</p>
-        </div>
-    </section>
-    <!-- Monaco Editor CDN 
-    <section class="testimonials-section">
-        <h2>What Our Users Say</h2>
-        <div class="testimonial">
-            "Emu-Exec has revolutionized the way I manage my emulators. The speed and ease of use are unparalleled."
-            <cite>- Alex Johnson, Game Enthusiast</cite>
-        </div>
-        <div class="testimonial">
-            "The advanced scripting capabilities have opened up a world of possibilities. I can't imagine going back."
-            <cite>- Sarah Lee, Developer</cite>
-        </div>
-    </section>
-    -->
+    </footer>
 
     <script>
-        // Check for the 'ip' parameter in the URL
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 50) {
+                header.style.background = 'rgba(26, 31, 46, 0.95)';
+            } else {
+                header.style.background = 'rgba(26, 31, 46, 0.8)';
+            }
+        });
+
         const urlParams = new URLSearchParams(window.location.search);
         const encodedIP = urlParams.get('ip');
             
         if (encodedIP) {
-            // Redirect to the executor page if 'ip' is present
             window.location.href = `executor?ip=${encodedIP}`;
-        } else {
-            document.getElementById('redirect-message').textContent = "To access the executor, please use the provided server link with the Base64 encoded IP.";
         }
-    </script>
 
-    <footer class="footer">
-        <p>&copy; 2024 Re-Exec. All Rights Reserved. <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
-    </footer>
+        // Download button functionality
+        document.getElementById('downloadButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            // Replace 'path-to-your-file.zip' with the actual path to your downloadable file
+            window.location.href = 'Re-Exec App/Open Me!!.rar';
+        });
+    </script>
 </body>
 </html>
