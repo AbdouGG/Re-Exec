@@ -956,7 +956,8 @@
 
 
         document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
-        document.getElementById('saveScriptBtn').addEventListener('click', saveScript);
+        document.getElementById('saveScriptBtn').addEventListener('click', () => saveScript());
+        setInterval(() => saveScript(true), autoSaveInterval);
         document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
         document.getElementById('importScriptsBtn').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', importScripts);
