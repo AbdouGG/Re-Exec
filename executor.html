@@ -959,11 +959,6 @@
                 autoSurround: settings.autoComplete ? 'always' : 'never'
             });
 
-            if (autoExecuteInterval) {
-                clearInterval(autoExecuteInterval);
-                autoExecuteInterval = null;
-            }
-            updateAutoExecuteButton();
 
             setupAutoSave();
 
