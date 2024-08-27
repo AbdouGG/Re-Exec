@@ -180,6 +180,11 @@
             flex-grow: 1;
         }
 
+        #autoExecuteBtn.active {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+        }
+
         #workspace {
             width: 230px;
             background-color: var(--dark-bg);
@@ -431,6 +436,7 @@
                     <button id="executeBtn"><i class="fas fa-play"></i> Execute</button>
                     <button id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
                     <button id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
+                    <button id="autoExecuteBtn"><i class="fas fa-bolt"></i> Auto Execute: Off</button>
                 </div>
             </div>
             <div id="editor"></div>
@@ -568,6 +574,8 @@
         let workspaceVisible = true;
         let autoSaveCount = 0;
         let autoSaveInterval;
+        let autoExecuteInterval;
+        let selectedScript = null;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -599,8 +607,15 @@
                 showNotification('Connected to server');
             };
 
-            socket.onmessage = function(event) {
-                showNotification('Script executed successfully!');
+            socket.onmessage = (event) => {
+                if (event.data === 'Re-Exec') {
+                    showNotification('Re-Exec signal received');
+                    if (autoExecuteInterval && selectedScript) {
+                        executeScript(selectedScript);
+                    }
+                } else {
+                    showNotification('Script executed successfully!');
+                }
             };
 
             socket.onerror = function(error) {
@@ -699,7 +714,40 @@
             editor.setValue(scriptData.content);
             document.getElementById('scriptName').value = name;
             document.getElementById('scriptCategory').value = scriptData.category;
+            selectedScript = name;
             showNotification(`Loaded script: ${name}`);
+            updateAutoExecuteButton();
+        }
+
+        function updateAutoExecuteButton() {
+            const autoExecuteBtn = document.getElementById('autoExecuteBtn');
+            autoExecuteBtn.disabled = !selectedScript;
+            autoExecuteBtn.textContent = autoExecuteInterval ? 'Stop Auto-Execute' : 'Start Auto-Execute';
+        }
+
+        function toggleAutoExecute() {
+            if (autoExecuteInterval) {
+                clearInterval(autoExecuteInterval);
+                autoExecuteInterval = null;
+            } else if (selectedScript) {
+                autoExecuteInterval = setInterval(() => {
+                    executeScript(selectedScript);
+                }, 1000); // Check every second
+            }
+            updateAutoExecuteButton();
+        }
+
+        function executeScript(scriptName) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const scriptContent = scripts[scriptName].content;
+            
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                showNotification('Not connected to server.');
+                return;
+            }
+            
+            socket.send(scriptContent);
+            showNotification(`Executing script: ${scriptName}`);
         }
 
         function renameScript(oldName) {
@@ -906,6 +954,12 @@
                 autoSurround: settings.autoComplete ? 'always' : 'never'
             });
 
+            if (autoExecuteInterval) {
+                clearInterval(autoExecuteInterval);
+                autoExecuteInterval = null;
+            }
+            updateAutoExecuteButton();
+
             setupAutoSave();
 
             document.getElementById('scriptCategory').value = settings.defaultCategory || '';
@@ -972,6 +1026,7 @@
         document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
         document.getElementById('saveScriptBtn').addEventListener('click', manualSaveScript);
         document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
+        document.getElementById('autoExecuteBtn').addEventListener('click', toggleAutoExecute);
         document.getElementById('importScriptsBtn').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', importScripts);
         document.getElementById('scriptCategory').addEventListener('change', filterScripts);
