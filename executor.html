@@ -574,7 +574,6 @@
         let workspaceVisible = true;
         let autoSaveCount = 0;
         let autoSaveInterval;
-        let autoExecuteInterval;
         let selectedScript = null;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
@@ -610,8 +609,8 @@
             socket.onmessage = (event) => {
                 if (event.data === 'Re-Exec') {
                     showNotification('Re-Exec signal received');
-                    if (autoExecuteInterval && selectedScript) {
-                        executeScript(selectedScript);
+                    if (document.getElementById('autoExecuteBtn').classList.contains('active')) {
+                        executeCurrentCode();
                     }
                 } else {
                     showNotification('Script executed successfully!');
@@ -716,25 +715,31 @@
             document.getElementById('scriptCategory').value = scriptData.category;
             selectedScript = name;
             showNotification(`Loaded script: ${name}`);
-            updateAutoExecuteButton();
         }
 
-        function updateAutoExecuteButton() {
-            const autoExecuteBtn = document.getElementById('autoExecuteBtn');
-            autoExecuteBtn.disabled = !selectedScript;
-            autoExecuteBtn.textContent = autoExecuteInterval ? 'Stop Auto-Execute' : 'Start Auto-Execute';
+        function executeCurrentCode() {
+            const code = editor.getValue();
+            if (code.trim() === '') {
+                showNotification('No code to execute.');
+                return;
+            }
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                showNotification('Not connected to server.');
+                return;
+            }
+            socket.send(code);
+            showNotification('Executing code...');
         }
 
         function toggleAutoExecute() {
-            if (autoExecuteInterval) {
-                clearInterval(autoExecuteInterval);
-                autoExecuteInterval = null;
-            } else if (selectedScript) {
-                autoExecuteInterval = setInterval(() => {
-                    executeScript(selectedScript);
-                }, 1000); // Check every second
+            const autoExecuteBtn = document.getElementById('autoExecuteBtn');
+            if (autoExecuteBtn.classList.contains('active')) {
+                autoExecuteBtn.classList.remove('active');
+                autoExecuteBtn.innerHTML = '<i class="fas fa-bolt"></i> Auto Execute: Off';
+            } else {
+                autoExecuteBtn.classList.add('active');
+                autoExecuteBtn.innerHTML = '<i class="fas fa-bolt"></i> Auto Execute: On';
             }
-            updateAutoExecuteButton();
         }
 
         function executeScript(scriptName) {
@@ -971,19 +976,7 @@
         }
 
         // Event Listeners
-        document.getElementById('executeBtn').addEventListener('click', () => {
-            const code = editor.getValue();
-            if (code.trim() === '') {
-                showNotification('Please enter some code to execute.');
-                return;
-            }
-            if (!socket || socket.readyState !== WebSocket.OPEN) {
-                showNotification('Not connected to server.');
-                return;
-            }
-            socket.send(code);
-            showNotification('Executing code...');
-        });
+        document.getElementById('executeBtn').addEventListener('click', executeCurrentCode);
 
         document.getElementById('clearBtn').addEventListener('click', () => {
             editor.setValue('');
