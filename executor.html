@@ -373,6 +373,41 @@
             padding: 8px 16px;
         }
 
+        .tabs {
+            display: flex;
+            background-color: var(--dark-bg);
+            border-bottom: 1px solid var(--primary-color);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-right: 1px solid var(--primary-color);
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s;
+        }
+
+        .tab.active {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+        }
+
+        .tab-close {
+            margin-left: 8px;
+            font-size: 0.8em;
+        }
+
+        .new-tab-btn {
+            padding: 8px 16px;
+            background-color: var(--light-bg);
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -405,6 +440,8 @@
 
             #editor-container {
                 width: 100% !important;
+                display: flex;
+                flex-direction: column;
             }
 
             .modal-content {
@@ -437,6 +474,10 @@
                     <button id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
                     <button id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
                     <button id="autoExecuteBtn"><i class="fas fa-bolt"></i> Auto Execute: Off</button>
+                </div>
+                <div class="tabs">
+                    <!-- Tabs will be dynamically added here -->
+                    <button class="new-tab-btn">+</button>
                 </div>
             </div>
             <div id="editor"></div>
@@ -575,6 +616,8 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
+        let tabs = [];
+        let activeTab = null;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -658,11 +701,90 @@
             scripts[scriptName] = { content: scriptContent, category: scriptCategory };
             localStorage.setItem('scripts', JSON.stringify(scripts));
             
+            // Update current tab name
+            if (activeTab) {
+                const tab = tabs.find(tab => tab.id === activeTab);
+                if (tab) {
+                    tab.name = scriptName;
+                    updateTabsUI();
+                }
+            }
+
             showNotification(`Script saved as: ${scriptName}`);
             loadScripts();
         }
 
-        
+        createNewTab();
+
+        function createNewTab(name = 'Untitled', content = '') {
+            const tabId = 'tab_' + Date.now();
+            tabs.push({ id: tabId, name: name, content: content });
+            updateTabsUI();
+            switchToTab(tabId);
+        }
+
+        function updateTabsUI() {
+            const tabsContainer = document.querySelector('.tabs');
+            tabsContainer.innerHTML = tabs.map(tab => `
+                <div class="tab ${tab.id === activeTab ? 'active' : ''}" data-tab-id="${tab.id}">
+                    ${tab.name}
+                    <span class="tab-close">×</span>
+                </div>
+            `).join('') + '<button class="new-tab-btn">+</button>';
+
+            // Add event listeners
+            document.querySelectorAll('.tab').forEach(tabElement => {
+                tabElement.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('tab-close')) {
+                        switchToTab(tabElement.dataset.tabId);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.tab-close').forEach(closeBtn => {
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeTab(e.target.parentElement.dataset.tabId);
+                });
+            });
+
+            document.querySelector('.new-tab-btn').addEventListener('click', () => createNewTab());
+        }
+
+        function switchToTab(tabId) {
+            if (activeTab) {
+                // Save current content
+                const currentTab = tabs.find(tab => tab.id === activeTab);
+                if (currentTab) {
+                    currentTab.content = editor.getValue();
+                }
+            }
+
+            activeTab = tabId;
+            const tab = tabs.find(tab => tab.id === tabId);
+            if (tab) {
+                editor.setValue(tab.content);
+                document.getElementById('scriptName').value = tab.name;
+            }
+            updateTabsUI();
+        }
+
+        function closeTab(tabId) {
+            const index = tabs.findIndex(tab => tab.id === tabId);
+            if (index > -1) {
+                tabs.splice(index, 1);
+                if (activeTab === tabId) {
+                    activeTab = tabs.length > 0 ? tabs[tabs.length - 1].id : null;
+                }
+                updateTabsUI();
+                if (activeTab) {
+                    switchToTab(activeTab);
+                } else {
+                    editor.setValue('');
+                    document.getElementById('scriptName').value = '';
+                }
+            }
+        }
 
         // Separate function for auto-save
         function autoSaveScript() {
@@ -710,8 +832,7 @@
         function loadScript(name) {
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             const scriptData = scripts[name];
-            editor.setValue(scriptData.content);
-            document.getElementById('scriptName').value = name;
+            createNewTab(name, scriptData.content);
             document.getElementById('scriptCategory').value = scriptData.category;
             selectedScript = name;
             showNotification(`Loaded script: ${name}`);
