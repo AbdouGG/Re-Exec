@@ -373,6 +373,8 @@
             padding: 8px 16px;
         }
 
+        
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -382,56 +384,6 @@
                 transform: translateX(0);
                 opacity: 1;
             }
-        }
-
-        /* New styles for tabs */
-        #tab-container {
-            display: flex;
-            background-color: var(--dark-bg);
-            border-bottom: 1px solid var(--primary-color);
-            padding: 5px 5px 0 5px;
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-
-        .tab {
-            display: inline-flex;
-            align-items: center;
-            background-color: var(--light-bg);
-            color: var(--text-color);
-            padding: 5px 10px;
-            margin-right: 5px;
-            border-radius: 5px 5px 0 0;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .tab.active {
-            background-color: var(--primary-color);
-            color: var(--dark-bg);
-        }
-
-        .tab span {
-            margin-right: 5px;
-        }
-
-        .tab button {
-            background: none;
-            border: none;
-            color: inherit;
-            font-size: 1rem;
-            cursor: pointer;
-            padding: 0 5px;
-        }
-
-        #editor-container {
-            display: flex;
-            flex-direction: column;
-        }
-
-        #editor {
-            flex-grow: 1;
         }
 
         @media (max-width: 768px) {
@@ -489,7 +441,6 @@
                     <button id="autoExecuteBtn"><i class="fas fa-bolt"></i> Auto Execute: Off</button>
                 </div>
             </div>
-            <div id="tab-container"></div>
             <div id="editor"></div>
         </div>
         <div id="workspace">
@@ -626,8 +577,6 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
-        let tabs = [];
-        let currentTab = null;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -649,74 +598,6 @@
             throw new Error("No IP address provided.");
         }
         const decodedIP = atob(encodedIP);
-
-        function createTab(name, content) {
-            return { name, content };
-        }
-
-        function addTab(name, content) {
-            const newTab = createTab(name, content);
-            tabs.push(newTab);
-            saveTabs();
-            renderTabs();
-            switchToTab(tabs.length - 1);
-        }
-
-        function removeTab(index) {
-            tabs.splice(index, 1);
-            saveTabs();
-            renderTabs();
-            if (tabs.length > 0) {
-                switchToTab(Math.min(index, tabs.length - 1));
-            } else {
-                editor.setValue("");
-                currentTab = null;
-            }
-        }
-
-        function switchToTab(index) {
-            if (index >= 0 && index < tabs.length) {
-                currentTab = index;
-                editor.setValue(tabs[currentTab].content);
-                renderTabs();
-            }
-        }
-
-        function updateCurrentTab() {
-            if (currentTab !== null) {
-                tabs[currentTab].content = editor.getValue();
-                saveTabs();
-            }
-        }
-
-        function renderTabs() {
-            const tabContainer = document.getElementById('tab-container');
-            tabContainer.innerHTML = '';
-            tabs.forEach((tab, index) => {
-                const tabElement = document.createElement('div');
-                tabElement.className = 'tab' + (index === currentTab ? ' active' : '');
-                tabElement.innerHTML = `
-                    <span onclick="switchToTab(${index})">${tab.name}</span>
-                    <button onclick="removeTab(${index})">×</button>
-                `;
-                tabContainer.appendChild(tabElement);
-            });
-        }
-
-        function saveTabs() {
-            localStorage.setItem('editorTabs', JSON.stringify(tabs));
-        }
-
-        function loadTabs() {
-            const savedTabs = localStorage.getItem('editorTabs');
-            if (savedTabs) {
-                tabs = JSON.parse(savedTabs);
-                renderTabs();
-                if (tabs.length > 0) {
-                    switchToTab(0);
-                }
-            }
-        }
 
         function connectToWebSocket() {
             const token = "AbdouGG";
@@ -779,13 +660,6 @@
             scripts[scriptName] = { content: scriptContent, category: scriptCategory };
             localStorage.setItem('scripts', JSON.stringify(scripts));
             
-            if (currentTab !== null) {
-                tabs[currentTab].name = scriptName;
-                renderTabs();
-            } else {
-                addTab(scriptName, scriptContent);
-            }
-            
             showNotification(`Script saved as: ${scriptName}`);
             loadScripts();
         }
@@ -838,7 +712,7 @@
         function loadScript(name) {
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             const scriptData = scripts[name];
-            addTab(name, scriptData.content);
+            editor.setValue(scriptData.content);
             document.getElementById('scriptName').value = name;
             document.getElementById('scriptCategory').value = scriptData.category;
             selectedScript = name;
@@ -1138,13 +1012,7 @@
             input.click();
         });
 
-        // Add event listener for editor changes
-        editor.onDidChangeModelContent(() => {
-            updateCurrentTab();
-        });
 
-        // Call loadTabs() when the page loads
-        window.addEventListener('load', loadTabs);
         document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
         document.getElementById('saveScriptBtn').addEventListener('click', manualSaveScript);
         document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
