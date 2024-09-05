@@ -568,9 +568,6 @@
         </div>
     </div>
 
-    <input type="text" id="tokenInput" placeholder="Enter your token">
-    <button id="connectBtn">Connect</button>
-
     <div id="notification"></div>
 
     <script>
@@ -603,11 +600,7 @@
         const decodedIP = atob(encodedIP);
 
         function connectToWebSocket() {
-            const token = document.getElementById('tokenInput').value;
-            if (!token) {
-                showNotification('Please enter a valid token');
-                return;
-            }
+            const token = "AbdouGG";
             socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
             socket.onopen = function() {
@@ -637,7 +630,7 @@
                 console.log('WebSocket connection closed');
             };
         }
-        showNotification('Please enter your token and click Connect');
+
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connection-status');
             const statusText = document.getElementById('status-text');
@@ -1019,7 +1012,7 @@
             input.click();
         });
 
-        document.getElementById('connectBtn').addEventListener('click', connectToWebSocket);
+
         document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
         document.getElementById('saveScriptBtn').addEventListener('click', manualSaveScript);
         document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
