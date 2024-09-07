@@ -670,7 +670,7 @@
         }
 
         function connectToCollaborationWebSocket() {
-            const token = "AbdouGG";
+            const token = "AbdouGG.";
             collaborationSocket = new WebSocket(`ws://${decodedIP}:7890/Collaboration?token=${token}`);
 
             collaborationSocket.onopen = function() {
