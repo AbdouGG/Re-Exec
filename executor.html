@@ -609,7 +609,7 @@
         const decodedIP = atob(encodedIP);
 
         function connectToWebSocket() {
-            const token = "AbdouGG.";
+            const token = "AbdouGG";
             socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
             socket.onopen = function() {
@@ -670,7 +670,7 @@
         }
 
         function connectToCollaborationWebSocket() {
-            const token = "AbdouGG.";
+            const token = "AbdouGG";
             collaborationSocket = new WebSocket(`ws://${decodedIP}:7890/Collaboration?token=${token}`);
 
             collaborationSocket.onopen = function() {
@@ -685,6 +685,8 @@
                         currentRoomId = message.RoomId;
                         showNotification(`Room created: ${currentRoomId}`);
                         updateRoomDisplay();
+                        // Display the full connection URL for sharing
+                        showShareableLink();
                         break;
                     case "joined_room":
                         currentRoomId = message.RoomId;
@@ -711,6 +713,12 @@
                 currentRoomId = null;
                 updateRoomDisplay();
             };
+        }
+
+        function showShareableLink() {
+            const shareableLink = `https://re-exec.vercel.app/executor/${btoa(decodedIP)}?room=${currentRoomId}`;
+            showNotification(`Share this link with your friend: ${shareableLink}`);
+            // You might want to add a button or input field to easily copy this link
         }
 
         function createRoom() {
@@ -795,6 +803,19 @@
                 document.getElementById('leaveRoomBtn').style.display = 'none';
             }
         }
+
+        // ... (rest of the code remains the same)
+
+        // Add this to your window.onload or existing initialization code
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomIdFromURL = urlParams.get('room');
+            if (roomIdFromURL) {
+                document.getElementById('roomIdInput').value = roomIdFromURL;
+                toggleCollaborationMode();
+                joinRoom();
+            }
+        });
 
         // Add event listeners for new buttons
         document.getElementById('toggleCollaborationBtn').addEventListener('click', toggleCollaborationMode);
