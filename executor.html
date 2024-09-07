@@ -341,36 +341,6 @@
             margin-bottom: 20px;
         }
 
-        #teamSharingSection {
-            background-color: var(--dark-bg);
-            border-radius: 10px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        #teamSharingSection h3 {
-            color: var(--primary-color);
-            margin-top: 0;
-        }
-
-        #teamToken {
-            background-color: var(--light-bg);
-            border: none;
-            padding: 0.4rem;
-            border-radius: 5px;
-            color: var(--text-color);
-            width: calc(100% - 110px);
-            font-size: 0.8rem;
-        }
-
-        #generateTokenBtn {
-            width: 100px;
-        }
-
-        #teamSharingToggle {
-            margin-top: 0.5rem;
-        }
-
         .modal input[type="text"],
         .modal input[type="number"],
         .modal select,
@@ -486,22 +456,30 @@
             <button id="exportScriptsBtn"><i class="fas fa-file-export"></i> Export Scripts</button>
             <input type="file" id="importFile" style="display: none;" multiple>
             <button id="importScriptsBtn"><i class="fas fa-file-import"></i> Import Scripts</button>
-            <div id="teamSharingSection"></div>
-                <h3>Team Sharing</h3>
-                <div>
-                    <input type="text" id="teamToken" placeholder="Team Token" readonly>
-                    <button id="generateTokenBtn">Generate Token</button>
-                </div>
-                <div id="teamSharingToggle">
-                    <input type="checkbox" id="teamSharingEnabled">
-                    <label for="teamSharingEnabled">Enable Team Sharing</label>
-                </div>
-                <p id="teamSharingStatus"></p>
-            </div>
             <div id="script-list-container">
                 <ul id="scriptList"></ul>
             </div>
         </div>
+
+
+        <!-- Team Sharing Section -->
+        <section id="team-sharing">
+            <h3>Team Sharing</h3>
+            <div>
+                <label for="friend-ip">Friend's WebSocket IP:</label>
+                <input type="text" id="friend-ip" placeholder="Enter Friend's WebSocket IP (e.g., ws://<friend-ip>:7890)">
+            </div>
+            <div>
+                <label for="friend-token">Friend's Token:</label>
+                <input type="text" id="friend-token" placeholder="Enter Token (e.g., your-friend-token)">
+            </div>
+            <button id="connectFriendWebSocketBtn">Connect to Friend's WebSocket</button>
+            <div id="team-connection-status" class="connection-status">
+                <p>Status: <span id="friend-connection-status-text">Not Connected</span></p>
+            </div>
+        </section>
+
+
     </main>
 
     <div id="deleteModal" class="modal">
@@ -619,8 +597,7 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
-        let teamSharingEnabled = false;
-        let teamToken = '';
+        let friendSocket;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -644,7 +621,7 @@
         const decodedIP = atob(encodedIP);
 
         function connectToWebSocket() {
-            const token = teamSharingEnabled ? teamToken : "AbdouGG";
+            const token = "AbdouGG";
             socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
             socket.onopen = function() {
@@ -668,77 +645,58 @@
                 console.error('WebSocket Error:', error);
             };
 
-            socket.onclose = function(event) {
+            socket.onclose = function() {
                 updateConnectionStatus(false);
-                if (event.code === 1008) {
-                    showNotification('Connection closed: Invalid token');
-                } else {
-                    showNotification('Disconnected from server');
-                }
+                showNotification('Disconnected from server');
                 console.log('WebSocket connection closed');
             };
         }
 
-        // Add these functions to handle team sharing
-        function updateTeamSharing(enabled) {
-            teamSharingEnabled = enabled;
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(`TEAM_SHARING:ENABLE:${enabled}`);
+
+        // Function to connect to friend's WebSocket
+        function connectToFriendWebSocket() {
+            const friendIP = document.getElementById('friend-ip').value.trim();
+            const friendToken = document.getElementById('friend-token').value.trim();
+
+            if (!friendIP || !friendToken) {
+                alert("Please enter both IP and Token to connect.");
+                return;
             }
+
+            // Connect to the friend's WebSocket with the token
+            friendSocket = new WebSocket(`${friendIP}/Execute?token=${friendToken}`);
+
+            // Handle WebSocket events for the friend's connection
+            friendSocket.onopen = function() {
+                updateFriendConnectionStatus(true);
+                showNotification('Connected to friend\'s WebSocket');
+            };
+
+            friendSocket.onmessage = function(event) {
+                console.log('Message from friend\'s WebSocket:', event.data);
+                showNotification('Message from friend received!');
+            };
+
+            friendSocket.onerror = function(error) {
+                showNotification('Error connecting to friend\'s WebSocket');
+                console.error('Friend WebSocket Error:', error);
+            };
+
+            friendSocket.onclose = function() {
+                updateFriendConnectionStatus(false);
+                showNotification('Disconnected from friend\'s WebSocket');
+            };
         }
 
-        function updateTeamToken(token) {
-            teamToken = token;
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(`TEAM_SHARING:TOKEN:${token}`);
-            }
+        // Function to update the connection status display
+        function updateFriendConnectionStatus(connected) {
+            const statusText = document.getElementById('friend-connection-status-text');
+            statusText.textContent = connected ? 'Connected' : 'Not Connected';
         }
 
-        // Update the event listeners for team sharing
-        document.getElementById('teamSharingEnabled').addEventListener('change', (e) => {
-            updateTeamSharing(e.target.checked);
-        });
+        // Add event listener to the "Connect to Friend's WebSocket" button
+        document.getElementById('connectFriendWebSocketBtn').addEventListener('click', connectToFriendWebSocket);
 
-        document.getElementById('generateTokenBtn').addEventListener('click', () => {
-            const newToken = generateToken();
-            document.getElementById('teamToken').value = newToken;
-            updateTeamToken(newToken);
-        });
-
-        function generateToken() {
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let result = '';
-            for (let i = 0; i < 16; i++) {
-                result += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            return result;
-        }
-
-        function updateTeamSharingStatus() {
-            const statusElement = document.getElementById('teamSharingStatus');
-            if (teamSharingEnabled) {
-                statusElement.textContent = `Team sharing is active. Share this link with your team: https://re-exec.vercel.app/executor/${encodedIP}?token=${teamToken}`;
-            } else {
-                statusElement.textContent = 'Team sharing is disabled.';
-            }
-        }
-
-        document.getElementById('generateTokenBtn').addEventListener('click', () => {
-            teamToken = generateToken();
-            document.getElementById('teamToken').value = teamToken;
-            updateTeamSharingStatus();
-        });
-
-        document.getElementById('teamSharingEnabled').addEventListener('change', (e) => {
-            teamSharingEnabled = e.target.checked;
-            updateTeamSharingStatus();
-            if (teamSharingEnabled && !teamToken) {
-                teamToken = generateToken();
-                document.getElementById('teamToken').value = teamToken;
-            }
-            // Here you would typically send a message to the server to update the team sharing status
-            // For now, we'll just update the client-side status
-        });
 
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connection-status');
