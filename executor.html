@@ -444,6 +444,7 @@
                     <button id="joinRoomBtn" style="display: none;"><i class="fas fa-sign-in-alt"></i> Join Room</button>
                     <button id="leaveRoomBtn" style="display: none;"><i class="fas fa-sign-out-alt"></i> Leave Room</button>
                     <input type="text" id="roomIdInput" placeholder="Room ID" style="display: none;">
+                    <input type="text" id="customServerInput" placeholder="Custom Server URL" style="display: none;">
                     <span id="roomDisplay" style="display: none;">Not in a room</span>
                 </div>
             </div>
@@ -608,9 +609,10 @@
         }
         const decodedIP = atob(encodedIP);
 
-        function connectToWebSocket() {
+        function connectToWebSocket(customUrl = null) {
             const token = "AbdouGG";
-            socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
+            const url = customUrl || `ws://${decodedIP}:7890/Execute?token=${token}`;
+            socket = new WebSocket(url);
 
             socket.onopen = function() {
                 updateConnectionStatus(true);
@@ -647,6 +649,7 @@
             const joinRoomBtn = document.getElementById('joinRoomBtn');
             const leaveRoomBtn = document.getElementById('leaveRoomBtn');
             const roomIdInput = document.getElementById('roomIdInput');
+            const customServerInput = document.getElementById('customServerInput');
             const roomDisplay = document.getElementById('roomDisplay');
 
             if (collaborationMode) {
@@ -654,6 +657,7 @@
                 createRoomBtn.style.display = 'inline-block';
                 joinRoomBtn.style.display = 'inline-block';
                 roomIdInput.style.display = 'inline-block';
+                customServerInput.style.display = 'inline-block';
                 roomDisplay.style.display = 'inline-block';
                 connectToCollaborationWebSocket();
             } else {
@@ -662,6 +666,7 @@
                 joinRoomBtn.style.display = 'none';
                 leaveRoomBtn.style.display = 'none';
                 roomIdInput.style.display = 'none';
+                customServerInput.style.display = 'none';
                 roomDisplay.style.display = 'none';
                 if (collaborationSocket && collaborationSocket.readyState === WebSocket.OPEN) {
                     collaborationSocket.close();
@@ -669,9 +674,10 @@
             }
         }
 
-        function connectToCollaborationWebSocket() {
+        function connectToCollaborationWebSocket(customUrl = null) {
             const token = "AbdouGG";
-            collaborationSocket = new WebSocket(`ws://${decodedIP}:7890/Collaboration?token=${token}`);
+            const url = customUrl || `ws://${decodedIP}:7890/Collaboration?token=${token}`;
+            collaborationSocket = new WebSocket(url);
 
             collaborationSocket.onopen = function() {
                 showNotification('Connected to collaboration server');
@@ -685,8 +691,6 @@
                         currentRoomId = message.RoomId;
                         showNotification(`Room created: ${currentRoomId}`);
                         updateRoomDisplay();
-                        // Display the full connection URL for sharing
-                        showShareableLink();
                         break;
                     case "joined_room":
                         currentRoomId = message.RoomId;
@@ -715,12 +719,6 @@
             };
         }
 
-        function showShareableLink() {
-            const shareableLink = `https://re-exec.vercel.app/executor/${btoa(decodedIP)}?room=${currentRoomId}`;
-            showNotification(`Share this link with your friend: ${shareableLink}`);
-            // You might want to add a button or input field to easily copy this link
-        }
-
         function createRoom() {
             if (collaborationSocket.readyState === WebSocket.OPEN) {
                 collaborationSocket.send(JSON.stringify({
@@ -733,7 +731,11 @@
 
         function joinRoom() {
             const roomId = document.getElementById('roomIdInput').value.trim();
+            const customServer = document.getElementById('customServerInput').value.trim();
             if (roomId) {
+                if (customServer) {
+                    connectToCollaborationWebSocket(customServer);
+                }
                 if (collaborationSocket.readyState === WebSocket.OPEN) {
                     collaborationSocket.send(JSON.stringify({
                         Type: "join_room",
@@ -772,6 +774,7 @@
                 if (collaborationSocket.readyState === WebSocket.OPEN) {
                     collaborationSocket.send(JSON.stringify({
                         Type: "execute_script",
+                        RoomId: currentRoomId,
                         Content: code
                     }));
                     showNotification('Executing code in the room...');
@@ -803,19 +806,6 @@
                 document.getElementById('leaveRoomBtn').style.display = 'none';
             }
         }
-
-        // ... (rest of the code remains the same)
-
-        // Add this to your window.onload or existing initialization code
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const roomIdFromURL = urlParams.get('room');
-            if (roomIdFromURL) {
-                document.getElementById('roomIdInput').value = roomIdFromURL;
-                toggleCollaborationMode();
-                joinRoom();
-            }
-        });
 
         // Add event listeners for new buttons
         document.getElementById('toggleCollaborationBtn').addEventListener('click', toggleCollaborationMode);
