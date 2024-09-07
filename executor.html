@@ -341,6 +341,36 @@
             margin-bottom: 20px;
         }
 
+        #teamSharingSection {
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        #teamSharingSection h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        #teamToken {
+            background-color: var(--light-bg);
+            border: none;
+            padding: 0.4rem;
+            border-radius: 5px;
+            color: var(--text-color);
+            width: calc(100% - 110px);
+            font-size: 0.8rem;
+        }
+
+        #generateTokenBtn {
+            width: 100px;
+        }
+
+        #teamSharingToggle {
+            margin-top: 0.5rem;
+        }
+
         .modal input[type="text"],
         .modal input[type="number"],
         .modal select,
@@ -439,13 +469,6 @@
                     <button id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
                     <button id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
                     <button id="autoExecuteBtn"><i class="fas fa-bolt"></i> Auto Execute: Off</button>
-                    <button id="toggleCollaborationBtn"><i class="fas fa-users"></i> Collaboration: Off</button>
-                    <button id="createRoomBtn" style="display: none;"><i class="fas fa-plus-circle"></i> Create Room</button>
-                    <button id="joinRoomBtn" style="display: none;"><i class="fas fa-sign-in-alt"></i> Join Room</button>
-                    <button id="leaveRoomBtn" style="display: none;"><i class="fas fa-sign-out-alt"></i> Leave Room</button>
-                    <input type="text" id="roomIdInput" placeholder="Room ID" style="display: none;">
-                    <input type="text" id="customServerInput" placeholder="Custom Server URL" style="display: none;">
-                    <span id="roomDisplay" style="display: none;">Not in a room</span>
                 </div>
             </div>
             <div id="editor"></div>
@@ -463,6 +486,18 @@
             <button id="exportScriptsBtn"><i class="fas fa-file-export"></i> Export Scripts</button>
             <input type="file" id="importFile" style="display: none;" multiple>
             <button id="importScriptsBtn"><i class="fas fa-file-import"></i> Import Scripts</button>
+            <div id="teamSharingSection"></div>
+                <h3>Team Sharing</h3>
+                <div>
+                    <input type="text" id="teamToken" placeholder="Team Token" readonly>
+                    <button id="generateTokenBtn">Generate Token</button>
+                </div>
+                <div id="teamSharingToggle">
+                    <input type="checkbox" id="teamSharingEnabled">
+                    <label for="teamSharingEnabled">Enable Team Sharing</label>
+                </div>
+                <p id="teamSharingStatus"></p>
+            </div>
             <div id="script-list-container">
                 <ul id="scriptList"></ul>
             </div>
@@ -580,13 +615,12 @@
     <script>
         let editor;
         let socket;
-        let collaborationSocket;
         let workspaceVisible = true;
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
-        let currentRoomId = null;
-        let collaborationMode = false;
+        let teamSharingEnabled = false;
+        let teamToken = '';
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -609,10 +643,9 @@
         }
         const decodedIP = atob(encodedIP);
 
-        function connectToWebSocket(customUrl = null) {
-            const token = "AbdouGG";
-            const url = customUrl || `ws://${decodedIP}:7890/Execute?token=${token}`;
-            socket = new WebSocket(url);
+        function connectToWebSocket() {
+            const token = teamSharingEnabled ? teamToken : "AbdouGG";
+            socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
             socket.onopen = function() {
                 updateConnectionStatus(true);
@@ -635,187 +668,51 @@
                 console.error('WebSocket Error:', error);
             };
 
-            socket.onclose = function() {
+            socket.onclose = function(event) {
                 updateConnectionStatus(false);
-                showNotification('Disconnected from server');
+                if (event.code === 1008) {
+                    showNotification('Connection closed: Invalid token');
+                } else {
+                    showNotification('Disconnected from server');
+                }
                 console.log('WebSocket connection closed');
             };
         }
 
-        function toggleCollaborationMode() {
-            collaborationMode = !collaborationMode;
-            const toggleBtn = document.getElementById('toggleCollaborationBtn');
-            const createRoomBtn = document.getElementById('createRoomBtn');
-            const joinRoomBtn = document.getElementById('joinRoomBtn');
-            const leaveRoomBtn = document.getElementById('leaveRoomBtn');
-            const roomIdInput = document.getElementById('roomIdInput');
-            const customServerInput = document.getElementById('customServerInput');
-            const roomDisplay = document.getElementById('roomDisplay');
+        function generateToken() {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 16; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
 
-            if (collaborationMode) {
-                toggleBtn.innerHTML = '<i class="fas fa-users"></i> Collaboration: On';
-                createRoomBtn.style.display = 'inline-block';
-                joinRoomBtn.style.display = 'inline-block';
-                roomIdInput.style.display = 'inline-block';
-                customServerInput.style.display = 'inline-block';
-                roomDisplay.style.display = 'inline-block';
-                connectToCollaborationWebSocket();
+        function updateTeamSharingStatus() {
+            const statusElement = document.getElementById('teamSharingStatus');
+            if (teamSharingEnabled) {
+                statusElement.textContent = `Team sharing is active. Share this link with your team: https://re-exec.vercel.app/executor/${encodedIP}?token=${teamToken}`;
             } else {
-                toggleBtn.innerHTML = '<i class="fas fa-users"></i> Collaboration: Off';
-                createRoomBtn.style.display = 'none';
-                joinRoomBtn.style.display = 'none';
-                leaveRoomBtn.style.display = 'none';
-                roomIdInput.style.display = 'none';
-                customServerInput.style.display = 'none';
-                roomDisplay.style.display = 'none';
-                if (collaborationSocket && collaborationSocket.readyState === WebSocket.OPEN) {
-                    collaborationSocket.close();
-                }
+                statusElement.textContent = 'Team sharing is disabled.';
             }
         }
 
-        function connectToCollaborationWebSocket(customUrl = null) {
-            const token = "AbdouGG";
-            const url = customUrl || `ws://${decodedIP}:7890/Collaboration?token=${token}`;
-            collaborationSocket = new WebSocket(url);
+        document.getElementById('generateTokenBtn').addEventListener('click', () => {
+            teamToken = generateToken();
+            document.getElementById('teamToken').value = teamToken;
+            updateTeamSharingStatus();
+        });
 
-            collaborationSocket.onopen = function() {
-                showNotification('Connected to collaboration server');
-            };
-
-            collaborationSocket.onmessage = function(event) {
-                const message = JSON.parse(event.data);
-                
-                switch (message.Type) {
-                    case "room_created":
-                        currentRoomId = message.RoomId;
-                        showNotification(`Room created: ${currentRoomId}`);
-                        updateRoomDisplay();
-                        break;
-                    case "joined_room":
-                        currentRoomId = message.RoomId;
-                        showNotification(`Joined room: ${currentRoomId}`);
-                        updateRoomDisplay();
-                        break;
-                    case "execute_script":
-                        executeReceivedScript(message.Content);
-                        break;
-                    case "error":
-                        showNotification(`Error: ${message.Content}`);
-                        break;
-                }
-            };
-
-            collaborationSocket.onerror = function(error) {
-                showNotification('Error connecting to collaboration server');
-                console.error('Collaboration WebSocket Error:', error);
-            };
-
-            collaborationSocket.onclose = function() {
-                showNotification('Disconnected from collaboration server');
-                console.log('Collaboration WebSocket connection closed');
-                currentRoomId = null;
-                updateRoomDisplay();
-            };
-        }
-
-        function createRoom() {
-            if (collaborationSocket.readyState === WebSocket.OPEN) {
-                collaborationSocket.send(JSON.stringify({
-                    Type: "create_room"
-                }));
-            } else {
-                showNotification('Not connected to collaboration server');
+        document.getElementById('teamSharingEnabled').addEventListener('change', (e) => {
+            teamSharingEnabled = e.target.checked;
+            updateTeamSharingStatus();
+            if (teamSharingEnabled && !teamToken) {
+                teamToken = generateToken();
+                document.getElementById('teamToken').value = teamToken;
             }
-        }
-
-        function joinRoom() {
-            const roomId = document.getElementById('roomIdInput').value.trim();
-            const customServer = document.getElementById('customServerInput').value.trim();
-            if (roomId) {
-                if (customServer) {
-                    connectToCollaborationWebSocket(customServer);
-                }
-                if (collaborationSocket.readyState === WebSocket.OPEN) {
-                    collaborationSocket.send(JSON.stringify({
-                        Type: "join_room",
-                        RoomId: roomId
-                    }));
-                } else {
-                    showNotification('Not connected to collaboration server');
-                }
-            } else {
-                showNotification('Please enter a room ID');
-            }
-        }
-
-        function leaveRoom() {
-            if (currentRoomId && collaborationSocket.readyState === WebSocket.OPEN) {
-                collaborationSocket.send(JSON.stringify({
-                    Type: "leave_room"
-                }));
-                currentRoomId = null;
-                updateRoomDisplay();
-                showNotification('Left the room');
-            }
-        }
-
-        function executeCurrentCode() {
-            const code = editor.getValue();
-            if (code.trim() === '') {
-                showNotification('No code to execute.');
-                return;
-            }
-            if (collaborationMode) {
-                if (!currentRoomId) {
-                    showNotification('Not in a collaboration room.');
-                    return;
-                }
-                if (collaborationSocket.readyState === WebSocket.OPEN) {
-                    collaborationSocket.send(JSON.stringify({
-                        Type: "execute_script",
-                        RoomId: currentRoomId,
-                        Content: code
-                    }));
-                    showNotification('Executing code in the room...');
-                } else {
-                    showNotification('Not connected to collaboration server');
-                }
-            } else {
-                if (!socket || socket.readyState !== WebSocket.OPEN) {
-                    showNotification('Not connected to server.');
-                    return;
-                }
-                socket.send(code);
-                showNotification('Executing code...');
-            }
-        }
-
-        function executeReceivedScript(script) {
-            editor.setValue(script);
-            showNotification('Received and executed script from room');
-        }
-
-        function updateRoomDisplay() {
-            const roomDisplay = document.getElementById('roomDisplay');
-            if (currentRoomId) {
-                roomDisplay.textContent = `Current Room: ${currentRoomId}`;
-                document.getElementById('leaveRoomBtn').style.display = 'inline-block';
-            } else {
-                roomDisplay.textContent = 'Not in a room';
-                document.getElementById('leaveRoomBtn').style.display = 'none';
-            }
-        }
-
-        // Add event listeners for new buttons
-        document.getElementById('toggleCollaborationBtn').addEventListener('click', toggleCollaborationMode);
-        document.getElementById('createRoomBtn').addEventListener('click', createRoom);
-        document.getElementById('joinRoomBtn').addEventListener('click', joinRoom);
-        document.getElementById('leaveRoomBtn').addEventListener('click', leaveRoom);
-
-        // Modify the existing executeBtn event listener
-        document.getElementById('executeBtn').removeEventListener('click', executeCurrentCode);
-        document.getElementById('executeBtn').addEventListener('click', executeCurrentCode);
+            // Here you would typically send a message to the server to update the team sharing status
+            // For now, we'll just update the client-side status
+        });
 
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connection-status');
