@@ -577,6 +577,8 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
+        let collaborationSocket;
+        let currentRoomId = null;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -630,6 +632,143 @@
                 console.log('WebSocket connection closed');
             };
         }
+
+        
+
+        function connectToCollaborationWebSocket() {
+            const token = "AbdouGG";
+            collaborationSocket = new WebSocket(`ws://${decodedIP}:7890/Collaboration?token=${token}`);
+
+            collaborationSocket.onopen = function() {
+                showNotification('Connected to collaboration server');
+            };
+
+            collaborationSocket.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                
+                switch (message.Type) {
+                    case "room_created":
+                        currentRoomId = message.RoomId;
+                        showNotification(`Room created: ${currentRoomId}`);
+                        updateRoomDisplay();
+                        break;
+                    case "joined_room":
+                        currentRoomId = message.RoomId;
+                        showNotification(`Joined room: ${currentRoomId}`);
+                        updateRoomDisplay();
+                        break;
+                    case "execute_script":
+                        executeReceivedScript(message.Content);
+                        break;
+                    case "error":
+                        showNotification(`Error: ${message.Content}`);
+                        break;
+                }
+            };
+
+            collaborationSocket.onerror = function(error) {
+                showNotification('Error connecting to collaboration server');
+                console.error('Collaboration WebSocket Error:', error);
+            };
+
+            collaborationSocket.onclose = function() {
+                showNotification('Disconnected from collaboration server');
+                console.log('Collaboration WebSocket connection closed');
+                currentRoomId = null;
+                updateRoomDisplay();
+            };
+        }
+
+        function createRoom() {
+            if (collaborationSocket.readyState === WebSocket.OPEN) {
+                collaborationSocket.send(JSON.stringify({
+                    Type: "create_room"
+                }));
+            } else {
+                showNotification('Not connected to collaboration server');
+            }
+        }
+
+        function joinRoom() {
+            const roomId = prompt("Enter the room ID:");
+            if (roomId) {
+                if (collaborationSocket.readyState === WebSocket.OPEN) {
+                    collaborationSocket.send(JSON.stringify({
+                        Type: "join_room",
+                        RoomId: roomId
+                    }));
+                } else {
+                    showNotification('Not connected to collaboration server');
+                }
+            }
+        }
+
+        function leaveRoom() {
+            if (currentRoomId && collaborationSocket.readyState === WebSocket.OPEN) {
+                collaborationSocket.send(JSON.stringify({
+                    Type: "leave_room"
+                }));
+                currentRoomId = null;
+                updateRoomDisplay();
+                showNotification('Left the room');
+            }
+        }
+
+        function executeCurrentCode() {
+            const code = editor.getValue();
+            if (code.trim() === '') {
+                showNotification('No code to execute.');
+                return;
+            }
+            if (!currentRoomId) {
+                showNotification('Not in a collaboration room.');
+                return;
+            }
+            if (collaborationSocket.readyState === WebSocket.OPEN) {
+                collaborationSocket.send(JSON.stringify({
+                    Type: "execute_script",
+                    Content: code
+                }));
+                showNotification('Executing code in the room...');
+            } else {
+                showNotification('Not connected to collaboration server');
+            }
+        }
+
+        function executeReceivedScript(script) {
+            // Here you would implement the logic to execute the received script
+            // This depends on how your application is set up to execute scripts
+            console.log('Received script to execute:', script);
+            showNotification('Received and executed script from room');
+        }
+
+        function updateRoomDisplay() {
+            const roomDisplay = document.getElementById('roomDisplay');
+            if (currentRoomId) {
+                roomDisplay.textContent = `Current Room: ${currentRoomId}`;
+            } else {
+                roomDisplay.textContent = 'Not in a room';
+            }
+        }
+
+        // Add these lines to your existing script to create UI elements
+        document.getElementById('editor-controls').innerHTML += `
+            <button id="createRoomBtn"><i class="fas fa-plus-circle"></i> Create Room</button>
+            <button id="joinRoomBtn"><i class="fas fa-sign-in-alt"></i> Join Room</button>
+            <button id="leaveRoomBtn"><i class="fas fa-sign-out-alt"></i> Leave Room</button>
+            <span id="roomDisplay">Not in a room</span>
+        `;
+
+        document.getElementById('createRoomBtn').addEventListener('click', createRoom);
+        document.getElementById('joinRoomBtn').addEventListener('click', joinRoom);
+        document.getElementById('leaveRoomBtn').addEventListener('click', leaveRoom);
+
+        // Call this function after connecting to the main WebSocket
+        connectToCollaborationWebSocket();
+
+        // Modify the existing executeBtn event listener
+        document.getElementById('executeBtn').removeEventListener('click', executeCurrentCode);
+        document.getElementById('executeBtn').addEventListener('click', executeCurrentCode);
 
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connection-status');
