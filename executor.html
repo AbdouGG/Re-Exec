@@ -460,26 +460,6 @@
                 <ul id="scriptList"></ul>
             </div>
         </div>
-
-
-        <!-- Team Sharing Section -->
-        <section id="team-sharing">
-            <h3>Team Sharing</h3>
-            <div>
-                <label for="friend-ip">Friend's WebSocket IP:</label>
-                <input type="text" id="friend-ip" placeholder="Enter Friend's WebSocket IP (e.g., ws://<friend-ip>:7890)">
-            </div>
-            <div>
-                <label for="friend-token">Friend's Token:</label>
-                <input type="text" id="friend-token" placeholder="Enter Token (e.g., your-friend-token)">
-            </div>
-            <button id="connectFriendWebSocketBtn">Connect to Friend's WebSocket</button>
-            <div id="team-connection-status" class="connection-status">
-                <p>Status: <span id="friend-connection-status-text">Not Connected</span></p>
-            </div>
-        </section>
-
-
     </main>
 
     <div id="deleteModal" class="modal">
@@ -597,7 +577,6 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
-        let friendSocket;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -651,52 +630,6 @@
                 console.log('WebSocket connection closed');
             };
         }
-
-
-        // Function to connect to friend's WebSocket
-        function connectToFriendWebSocket() {
-            const friendIP = document.getElementById('friend-ip').value.trim();
-            const friendToken = document.getElementById('friend-token').value.trim();
-
-            if (!friendIP || !friendToken) {
-                alert("Please enter both IP and Token to connect.");
-                return;
-            }
-
-            // Connect to the friend's WebSocket with the token
-            friendSocket = new WebSocket(`${friendIP}/Execute?token=${friendToken}`);
-
-            // Handle WebSocket events for the friend's connection
-            friendSocket.onopen = function() {
-                updateFriendConnectionStatus(true);
-                showNotification('Connected to friend\'s WebSocket');
-            };
-
-            friendSocket.onmessage = function(event) {
-                console.log('Message from friend\'s WebSocket:', event.data);
-                showNotification('Message from friend received!');
-            };
-
-            friendSocket.onerror = function(error) {
-                showNotification('Error connecting to friend\'s WebSocket');
-                console.error('Friend WebSocket Error:', error);
-            };
-
-            friendSocket.onclose = function() {
-                updateFriendConnectionStatus(false);
-                showNotification('Disconnected from friend\'s WebSocket');
-            };
-        }
-
-        // Function to update the connection status display
-        function updateFriendConnectionStatus(connected) {
-            const statusText = document.getElementById('friend-connection-status-text');
-            statusText.textContent = connected ? 'Connected' : 'Not Connected';
-        }
-
-        // Add event listener to the "Connect to Friend's WebSocket" button
-        document.getElementById('connectFriendWebSocketBtn').addEventListener('click', connectToFriendWebSocket);
-
 
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connection-status');
