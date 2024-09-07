@@ -577,6 +577,10 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
+        let collaborationSocket;
+        let collaborationEnabled = false;
+        let lastSentContent = '';
+        let collaborators = new Set();
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -630,6 +634,76 @@
                 console.log('WebSocket connection closed');
             };
         }
+
+        // Function to initialize collaborative editing
+        function initCollaborativeEditing() {
+            const roomId = prompt("Enter a room ID for collaboration:");
+            if (!roomId) return;
+
+            collaborationSocket = new WebSocket(`ws://${decodedIP}:7890/Collaborate?token=${token}&room=${roomId}`);
+
+            collaborationSocket.onopen = function() {
+                collaborationEnabled = true;
+                showNotification('Joined collaborative session');
+                document.getElementById('collaborationStatus').textContent = 'Collaborative: On';
+            };
+
+            collaborationSocket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'content') {
+                    if (data.content !== lastSentContent) {
+                        editor.setValue(data.content);
+                        lastSentContent = data.content;
+                    }
+                } else if (data.type === 'collaborators') {
+                    updateCollaboratorsList(data.collaborators);
+                }
+            };
+
+            collaborationSocket.onclose = function() {
+                collaborationEnabled = false;
+                showNotification('Left collaborative session');
+                document.getElementById('collaborationStatus').textContent = 'Collaborative: Off';
+            };
+
+            // Set up change listener on the editor
+            editor.onDidChangeModelContent((event) => {
+                if (collaborationEnabled) {
+                    const content = editor.getValue();
+                    if (content !== lastSentContent) {
+                        collaborationSocket.send(JSON.stringify({ type: 'content', content: content }));
+                        lastSentContent = content;
+                    }
+                }
+            });
+        }
+
+        function updateCollaboratorsList(collaboratorsList) {
+            collaborators = new Set(collaboratorsList);
+            const collaboratorsElement = document.getElementById('collaboratorsList');
+            collaboratorsElement.innerHTML = '';
+            collaborators.forEach(collaborator => {
+                const li = document.createElement('li');
+                li.textContent = collaborator;
+                collaboratorsElement.appendChild(li);
+            });
+        }
+
+        // Add a button to the UI to initiate collaborative editing
+        const collaborateBtn = document.createElement('button');
+        collaborateBtn.innerHTML = '<i class="fas fa-users"></i> Collaborate';
+        collaborateBtn.onclick = initCollaborativeEditing;
+        document.getElementById('editor-controls').appendChild(collaborateBtn);
+
+        // Add elements to display collaboration status and collaborators
+        const collaborationStatus = document.createElement('span');
+        collaborationStatus.id = 'collaborationStatus';
+        collaborationStatus.textContent = 'Collaborative: Off';
+        document.getElementById('editor-header').appendChild(collaborationStatus);
+
+        const collaboratorsList = document.createElement('ul');
+        collaboratorsList.id = 'collaboratorsList';
+        document.getElementById('workspace').appendChild(collaboratorsList);
 
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connection-status');
