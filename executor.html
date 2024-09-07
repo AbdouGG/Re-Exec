@@ -679,6 +679,32 @@
             };
         }
 
+        // Add these functions to handle team sharing
+        function updateTeamSharing(enabled) {
+            teamSharingEnabled = enabled;
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(`TEAM_SHARING:ENABLE:${enabled}`);
+            }
+        }
+
+        function updateTeamToken(token) {
+            teamToken = token;
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(`TEAM_SHARING:TOKEN:${token}`);
+            }
+        }
+
+        // Update the event listeners for team sharing
+        document.getElementById('teamSharingEnabled').addEventListener('change', (e) => {
+            updateTeamSharing(e.target.checked);
+        });
+
+        document.getElementById('generateTokenBtn').addEventListener('click', () => {
+            const newToken = generateToken();
+            document.getElementById('teamToken').value = newToken;
+            updateTeamToken(newToken);
+        });
+
         function generateToken() {
             const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
