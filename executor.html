@@ -7,9 +7,9 @@
     <link rel="icon" type="image/png" href="Logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
     <style>
         :root {
             /* Dark theme (default) */
@@ -581,22 +581,8 @@
 
     <div id="notification"></div>
 
-    <script type="text/babel">
-        const PerformanceMetricsPanel = ({ metrics }) => {
-            return (
-                <div className="performance-metrics-panel">
-                    <h3>Performance Metrics</h3>
-                    <ul>
-                        {Object.entries(metrics).map(([key, value]) => (
-                            <li key={key}>{key}: {value}</li>
-                        ))}
-                    </ul>
-                </div>
-            );
-        };
-    </script>
 
-    <script>
+    <script type="text/babel">
         let editor;
         let socket;
         let workspaceVisible = true;
@@ -616,6 +602,25 @@
             loadSettings();
             applySettings();
         });
+
+        function PerformanceMetricsPanel({ metrics }) {
+            return (
+                <div>
+                    <h3>Performance Metrics</h3>
+                    <p>Execution Time: {metrics.executionTime} ms</p>
+                    <p>Memory Usage: {metrics.memoryUsage} MB</p>
+                    {/* Add more metrics as needed */}
+                </div>
+            );
+        }
+
+        function updatePerformanceMetrics(metrics) {
+            const metricsContainer = document.getElementById('performance-metrics');
+            ReactDOM.render(
+                <PerformanceMetricsPanel metrics={metrics} />,
+                metricsContainer
+            );
+        }
 
         const pathParts = window.location.pathname.split('/');
         const encodedIP = pathParts[2];
@@ -647,13 +652,6 @@
                 }
             };
 
-            function updatePerformanceMetrics(metrics) {
-                const metricsContainer = document.getElementById('performance-metrics');
-                ReactDOM.render(
-                    React.createElement(PerformanceMetricsPanel, { metrics: metrics }),
-                    metricsContainer
-                );
-            }
 
             socket.onerror = function(error) {
                 showNotification('Error connecting to server');
@@ -664,6 +662,7 @@
                 updateConnectionStatus(false);
                 showNotification('Disconnected from server');
                 console.log('WebSocket connection closed');
+                setTimeout(connectToWebSocket, 5000);
             };
         }
 
