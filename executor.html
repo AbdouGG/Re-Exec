@@ -8,13 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
-
-    <script type="module">
-        import React from 'https://cdn.skypack.dev/react';
-        import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-
-        // ... (rest of your existing style content) ...
-    </script>
     <style>
         :root {
             /* Dark theme (default) */
@@ -310,13 +303,6 @@
             font-size: 0.8rem;
         }
 
-        #performance-metrics {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: var(--dark-bg);
-            border-radius: 10px;
-        }
-
         .modal {
             display: none;
             position: fixed;
@@ -456,9 +442,7 @@
                 </div>
             </div>
             <div id="editor"></div>
-            <div id="performance-metrics"></div>
         </div>
-        
         <div id="workspace">
             <h3>Workspace</h3>
             <input type="text" id="scriptName" placeholder="Script name">
@@ -586,12 +570,7 @@
 
     <div id="notification"></div>
 
-
-    <script type="module">
-        import React from 'https://cdn.skypack.dev/react';
-        import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-
-
+    <script>
         let editor;
         let socket;
         let workspaceVisible = true;
@@ -599,44 +578,17 @@
         let autoSaveInterval;
         let selectedScript = null;
 
-
-        const PerformanceMetricsPanel = ({ metrics }) => {
-            return React.createElement('div', null,
-                React.createElement('h3', null, 'Performance Metrics'),
-                React.createElement('p', null, `Execution Time: ${metrics.executionTime} ms`),
-                React.createElement('p', null, `Memory Usage: ${metrics.memoryUsage} MB`)
-                // Add more metrics as needed
-            );
-        };
-
-        function updatePerformanceMetrics(metrics) {
-            const metricsContainer = document.getElementById('performance-metrics');
-            ReactDOM.render(
-                React.createElement(PerformanceMetricsPanel, { metrics: metrics }),
-                metricsContainer
-            );
-        }
-
-
-        // Initialize everything when the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
-            require(['vs/editor/editor.main'], function() {
-                editor = monaco.editor.create(document.getElementById('editor'), {
-                    value: "-- Welcome to Re-Exec Ultra Pro\n-- Start coding here...",
-                    language: 'lua',
-                    theme: 'vs-dark',
-                    automaticLayout: true
-                });
-                loadScripts();
-                loadSettings();
-                applySettings();
-                connectToWebSocket();
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('editor'), {
+                value: "-- Welcome to Re-Exec Ultra Pro\n-- Start coding here...",
+                language: 'lua',
+                theme: 'vs-dark',
+                automaticLayout: true
             });
-
-            // Add your event listeners here
-            document.getElementById('executeBtn').addEventListener('click', executeCurrentCode);
-            // ... (rest of your event listeners) ...
+            loadScripts();
+            loadSettings();
+            applySettings();
         });
 
         const pathParts = window.location.pathname.split('/');
@@ -657,18 +609,15 @@
             };
 
             socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'Re-Exec') {
+                if (event.data === 'Re-Exec') {
                     showNotification('Re-Exec signal received');
                     if (document.getElementById('autoExecuteBtn').classList.contains('active')) {
                         executeCurrentCode();
                     }
-                } else if (data.type === 'execution-result') {
+                } else {
                     showNotification('Script executed successfully!');
-                    updatePerformanceMetrics(data.metrics);
                 }
             };
-
 
             socket.onerror = function(error) {
                 showNotification('Error connecting to server');
@@ -679,7 +628,6 @@
                 updateConnectionStatus(false);
                 showNotification('Disconnected from server');
                 console.log('WebSocket connection closed');
-                setTimeout(connectToWebSocket, 5000);
             };
         }
 
@@ -781,7 +729,7 @@
                 showNotification('Not connected to server.');
                 return;
             }
-            socket.send(JSON.stringify({ type: 'execute', code: code, measurePerformance: true }));
+            socket.send(code);
             showNotification('Executing code...');
         }
 
