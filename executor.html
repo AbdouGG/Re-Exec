@@ -580,18 +580,30 @@
         let collaborationSocket;
         let currentScriptId = null;
 
-        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
-        require(['vs/editor/editor.main'], function() {
-            editor = monaco.editor.create(document.getElementById('editor'), {
-                value: "-- Welcome to Re-Exec Ultra Pro\n-- Start coding here...",
-                language: 'lua',
-                theme: 'vs-dark',
-                automaticLayout: true
+        function initializeEditor() {
+            require(['vs/editor/editor.main'], function() {
+                editor = monaco.editor.create(document.getElementById('editor'), {
+                    value: "-- Welcome to Re-Exec Ultra Pro\n-- Start coding here...",
+                    language: 'lua',
+                    theme: 'vs-dark',
+                    automaticLayout: true
+                });
+
+                // Set up event listeners for the editor after it's initialized
+                editor.onDidChangeModelContent((event) => {
+                    sendScriptUpdate();
+                });
+
+                editor.onDidChangeCursorPosition((event) => {
+                    sendCursorUpdate();
+                });
+
+                loadScripts();
+                loadSettings();
+                applySettings();
+                connectToCollaborationWebSocket();
             });
-            loadScripts();
-            loadSettings();
-            applySettings();
-        });
+        }
 
         const pathParts = window.location.pathname.split('/');
         const encodedIP = pathParts[2];
@@ -807,13 +819,14 @@
         }
 
         // Set up event listeners for the editor
-        editor.onDidChangeModelContent((event) => {
-            sendScriptUpdate();
-        });
 
-        editor.onDidChangeCursorPosition((event) => {
-            sendCursorUpdate();
-        });
+        function initializeApplication() {
+            initializeEditor();
+            connectToWebSocket();
+        }
+
+        // Call this when the page loads
+        window.onload = initializeApplication;
 
         // Call this function after the main WebSocket connection is established
         
