@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Re-Exec Ultra Pro</title>
-    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&">
+    <link rel="icon" type="image/png" href="Logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
@@ -419,7 +419,7 @@
 <body>
     <header>
         <div class="logo">
-            <img src="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&" alt="Logo">
+            <link rel="icon" type="image/png" href="Logo.png">
             <h1>Re-Exec Ultra Pro</h1>
         </div>
         <nav>
@@ -577,6 +577,8 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
+        let collaborationSocket;
+        let currentScriptId = null;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -709,6 +711,88 @@
             }
         }
 
+        function connectToCollaborationWebSocket() {
+            const token = "AbdouGG";
+            collaborationSocket = new WebSocket(`ws://${decodedIP}:7890/Collaborate?token=${token}`);
+
+            collaborationSocket.onopen = function() {
+                console.log('Connected to collaboration server');
+                showNotification('Connected to collaboration server');
+            };
+
+            collaborationSocket.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                handleCollaborationMessage(message);
+            };
+
+            collaborationSocket.onerror = function(error) {
+                console.error('Collaboration WebSocket Error:', error);
+                showNotification('Error connecting to collaboration server');
+            };
+
+            collaborationSocket.onclose = function() {
+                console.log('Collaboration WebSocket connection closed');
+                showNotification('Disconnected from collaboration server');
+            };
+        }
+
+        function handleCollaborationMessage(message) {
+            switch (message.type) {
+                case 'script':
+                    editor.setValue(message.content);
+                    currentScriptId = message.scriptId;
+                    break;
+                case 'update':
+                    if (message.userId !== collaborationSocket.id) {
+                        editor.setValue(message.content);
+                    }
+                    break;
+                case 'cursor':
+                    if (message.userId !== collaborationSocket.id) {
+                        // Implement cursor update logic here
+                        // This might involve using the Monaco editor's decoration API
+                    }
+                    break;
+                case 'user_joined':
+                    showNotification(`User ${message.userId} joined the collaboration`);
+                    break;
+                case 'user_left':
+                    showNotification(`User ${message.userId} left the collaboration`);
+                    break;
+            }
+        }
+
+        function joinScript(scriptId) {
+            if (collaborationSocket.readyState === WebSocket.OPEN) {
+                collaborationSocket.send(JSON.stringify({
+                    type: 'join',
+                    scriptId: scriptId
+                }));
+                currentScriptId = scriptId;
+            }
+        }
+
+        function sendScriptUpdate() {
+            if (collaborationSocket.readyState === WebSocket.OPEN && currentScriptId) {
+                collaborationSocket.send(JSON.stringify({
+                    type: 'edit',
+                    scriptId: currentScriptId,
+                    content: editor.getValue()
+                }));
+            }
+        }
+
+        function sendCursorUpdate() {
+            if (collaborationSocket.readyState === WebSocket.OPEN && currentScriptId) {
+                const position = editor.getPosition();
+                collaborationSocket.send(JSON.stringify({
+                    type: 'cursor',
+                    scriptId: currentScriptId,
+                    position: JSON.stringify(position)
+                }));
+            }
+        }
+
         function loadScript(name) {
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             const scriptData = scripts[name];
@@ -717,7 +801,22 @@
             document.getElementById('scriptCategory').value = scriptData.category;
             selectedScript = name;
             showNotification(`Loaded script: ${name}`);
+            
+            // Join the collaboration for this script
+            joinScript(name);
         }
+
+        // Set up event listeners for the editor
+        editor.onDidChangeModelContent((event) => {
+            sendScriptUpdate();
+        });
+
+        editor.onDidChangeCursorPosition((event) => {
+            sendCursorUpdate();
+        });
+
+        // Call this function after the main WebSocket connection is established
+        
 
         function executeCurrentCode() {
             const code = editor.getValue();
@@ -1044,6 +1143,7 @@
         }
 
         connectToWebSocket();
+        connectToCollaborationWebSocket();
     </script>
 </body>
 </html>
