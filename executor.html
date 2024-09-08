@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.production.min.js"></script>
     <style>
         :root {
             /* Dark theme (default) */
@@ -449,8 +451,9 @@
                 </div>
             </div>
             <div id="editor"></div>
+            <div id="performance-metrics"></div>
         </div>
-        <div id="performance-metrics"></div>
+        
         <div id="workspace">
             <h3>Workspace</h3>
             <input type="text" id="scriptName" placeholder="Script name">
@@ -577,6 +580,21 @@
     </div>
 
     <div id="notification"></div>
+
+    <script type="text/babel">
+        const PerformanceMetricsPanel = ({ metrics }) => {
+            return (
+                <div className="performance-metrics-panel">
+                    <h3>Performance Metrics</h3>
+                    <ul>
+                        {Object.entries(metrics).map(([key, value]) => (
+                            <li key={key}>{key}: {value}</li>
+                        ))}
+                    </ul>
+                </div>
+            );
+        };
+    </script>
 
     <script>
         let editor;
