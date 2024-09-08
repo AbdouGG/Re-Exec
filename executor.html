@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Re-Exec Ultra Pro</title>
-    <link rel="icon" type="image/png" href="Logo.png">
+    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
@@ -419,7 +419,7 @@
 <body>
     <header>
         <div class="logo">
-            <link rel="icon" type="image/png" href="Logo.png">
+            <img src="https://cdn.discordapp.com/attachments/944246656646402049/1277641061686186045/Untitled-1.png?ex=66cde776&is=66cc95f6&hm=31937a3486479d6ef9e04732de8ccedf9a4bf8dd4ccc052a0316fa6a768c299d&" alt="Logo">
             <h1>Re-Exec Ultra Pro</h1>
         </div>
         <nav>
@@ -645,7 +645,6 @@
             setTimeout(() => notification.style.display = 'none', 3000);
         }
 
-        // Function for manual saving
         function manualSaveScript() {
             const scriptName = document.getElementById('scriptName').value.trim();
             const scriptContent = editor.getValue();
@@ -657,10 +656,22 @@
             }
 
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
-            scripts[scriptName] = { content: scriptContent, category: scriptCategory };
-            localStorage.setItem('scripts', JSON.stringify(scripts));
+            const existingScript = scripts[scriptName];
             
-            showNotification(`Script saved as: ${scriptName}`);
+            if (existingScript) {
+                const lastVersion = existingScript.versions[existingScript.currentVersion];
+                if (lastVersion.content !== scriptContent) {
+                    const newVersion = lastVersion.version + 1;
+                    saveScript(scriptName, scriptContent, scriptCategory, existingScript.tags, newVersion);
+                    showNotification(`Script updated: ${scriptName} (v${newVersion})`);
+                } else {
+                    showNotification('No changes detected');
+                }
+            } else {
+                saveScript(scriptName, scriptContent, scriptCategory);
+                showNotification(`New script saved: ${scriptName}`);
+            }
+            
             loadScripts();
         }
 
@@ -691,6 +702,22 @@
             }
         }
 
+        function saveScript(name, content, category, tags = [], version = 1) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            if (!scripts[name]) {
+                scripts[name] = {
+                    versions: [],
+                    currentVersion: 0,
+                    category: category,
+                    tags: tags
+                };
+            }
+            scripts[name].versions.push({ content, version });
+            scripts[name].currentVersion = scripts[name].versions.length - 1;
+            localStorage.setItem('scripts', JSON.stringify(scripts));
+        }
+
+        // Modify the loadScripts function to display tags and versions
         function loadScripts() {
             const scriptList = document.getElementById('scriptList');
             scriptList.innerHTML = '';
@@ -698,10 +725,15 @@
             
             for (const [name, scriptData] of Object.entries(scripts)) {
                 const li = document.createElement('li');
+                const currentVersion = scriptData.versions[scriptData.currentVersion];
                 li.innerHTML = `
                     <span>${name}</span>
                     <span class="category">${scriptData.category}</span>
+                    <span class="tags">${scriptData.tags.join(', ')}</span>
+                    <span class="version">v${currentVersion.version}</span>
                     <button onclick="loadScript('${name}')"><i class="fas fa-edit"></i></button>
+                    <button onclick="manageScriptTags('${name}')"><i class="fas fa-tags"></i></button>
+                    <button onclick="manageScriptVersions('${name}')"><i class="fas fa-code-branch"></i></button>
                     <button onclick="renameScript('${name}')"><i class="fas fa-pencil-alt"></i></button>
                     <button onclick="deleteScript('${name}')"><i class="fas fa-trash"></i></button>
                 `;
@@ -709,14 +741,142 @@
             }
         }
 
+        // Add a function to manage script tags
+        function manageScriptTags(name) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const script = scripts[name];
+            
+            const tagsModal = document.createElement('div');
+            tagsModal.className = 'modal';
+            tagsModal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Manage Tags for ${name}</h2>
+                    <input type="text" id="newTag" placeholder="Add new tag">
+                    <button onclick="addTag('${name}')">Add Tag</button>
+                    <div id="tagList"></div>
+                    <div class="modal-buttons">
+                        <button onclick="closeTagsModal()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(tagsModal);
+            
+            function updateTagList() {
+                const tagList = document.getElementById('tagList');
+                tagList.innerHTML = '';
+                script.tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.textContent = tag;
+                    tagElement.innerHTML += `<button onclick="removeTag('${name}', '${tag}')">×</button>`;
+                    tagList.appendChild(tagElement);
+                });
+            }
+            
+            updateTagList();
+            tagsModal.style.display = 'block';
+        }
+
+        function addTag(name) {
+            const newTag = document.getElementById('newTag').value.trim();
+            if (newTag) {
+                const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                if (!scripts[name].tags.includes(newTag)) {
+                    scripts[name].tags.push(newTag);
+                    localStorage.setItem('scripts', JSON.stringify(scripts));
+                    document.getElementById('newTag').value = '';
+                    updateTagList();
+                    loadScripts();
+                }
+            }
+        }
+
+        function removeTag(name, tag) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            scripts[name].tags = scripts[name].tags.filter(t => t !== tag);
+            localStorage.setItem('scripts', JSON.stringify(scripts));
+            updateTagList();
+            loadScripts();
+        }
+
+        function closeTagsModal() {
+            document.querySelector('.modal').remove();
+        }
+
+        // Add a function to manage script versions
+        function manageScriptVersions(name) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const script = scripts[name];
+            
+            const versionsModal = document.createElement('div');
+            versionsModal.className = 'modal';
+            versionsModal.innerHTML = `
+                <div class="modal-content">
+                    <h2>Manage Versions for ${name}</h2>
+                    <div id="versionList"></div>
+                    <div class="modal-buttons">
+                        <button onclick="closeVersionsModal()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(versionsModal);
+            
+            function updateVersionList() {
+                const versionList = document.getElementById('versionList');
+                versionList.innerHTML = '';
+                script.versions.forEach((version, index) => {
+                    const versionElement = document.createElement('div');
+                    versionElement.className = 'version-item';
+                    versionElement.innerHTML = `
+                        <span>Version ${version.version}</span>
+                        <button onclick="loadVersion('${name}', ${index})">Load</button>
+                        ${index !== script.currentVersion ? `<button onclick="deleteVersion('${name}', ${index})">Delete</button>` : ''}
+                    `;
+                    versionList.appendChild(versionElement);
+                });
+            }
+            
+            updateVersionList();
+            versionsModal.style.display = 'block';
+        }
+
+        function loadVersion(name, versionIndex) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const script = scripts[name];
+            script.currentVersion = versionIndex;
+            localStorage.setItem('scripts', JSON.stringify(scripts));
+            loadScript(name);
+            closeVersionsModal();
+        }
+
+        function deleteVersion(name, versionIndex) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const script = scripts[name];
+            script.versions.splice(versionIndex, 1);
+            if (script.currentVersion >= versionIndex) {
+                script.currentVersion = Math.max(0, script.currentVersion - 1);
+            }
+            localStorage.setItem('scripts', JSON.stringify(scripts));
+            updateVersionList();
+            loadScripts();
+        }
+
+        function closeVersionsModal() {
+            document.querySelector('.modal').remove();
+        }
+
+        
+
+        // Update the loadScript function to load the current version
         function loadScript(name) {
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             const scriptData = scripts[name];
-            editor.setValue(scriptData.content);
+            const currentVersion = scriptData.versions[scriptData.currentVersion];
+            editor.setValue(currentVersion.content);
             document.getElementById('scriptName').value = name;
             document.getElementById('scriptCategory').value = scriptData.category;
             selectedScript = name;
-            showNotification(`Loaded script: ${name}`);
+            showNotification(`Loaded script: ${name} (v${currentVersion.version})`);
         }
 
         function executeCurrentCode() {
@@ -1011,7 +1171,34 @@
             };
             input.click();
         });
-
+        
+        // Add styles for tags and versions
+        const style = document.createElement('style');
+        style.textContent = `
+            .tag {
+                background-color: var(--primary-color);
+                color: var(--dark-bg);
+                padding: 2px 5px;
+                border-radius: 3px;
+                margin-right: 5px;
+                font-size: 0.8em;
+            }
+            .tag button {
+                background: none;
+                border: none;
+                color: var(--dark-bg);
+                cursor: pointer;
+                font-weight: bold;
+                margin-left: 3px;
+            }
+            .version-item {
+                margin-bottom: 10px;
+            }
+            .version-item button {
+                margin-left: 10px;
+            }
+        `;
+        document.head.appendChild(style);
 
         document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
         document.getElementById('saveScriptBtn').addEventListener('click', manualSaveScript);
