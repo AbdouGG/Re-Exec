@@ -684,6 +684,7 @@
         const resetPeriod = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
         let executionCount = 0;
         let lastResetTime = Date.now();
+        let reconnectTimeout;
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
@@ -710,12 +711,17 @@
         const decodedIP = atob(encodedIP);
 
         function connectToWebSocket() {
+            if (reconnectTimeout) {
+                showNotification('Connection blocked. Please wait for the cooldown period to end.');
+                return;
+            }
             const token = "AbdouGG";
             socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
             socket.onopen = function() {
                 updateConnectionStatus(true);
                 showNotification('Connected to server');
+                document.getElementById('executeBtn').disabled = false;
             };
 
             socket.onmessage = (event) => {
@@ -726,6 +732,8 @@
                     }
                 } else {
                     showNotification('Script executed successfully!');
+                    executionCount++;
+                    checkExecutionLimit();
                 }
             };
 
@@ -738,7 +746,23 @@
                 updateConnectionStatus(false);
                 showNotification('Disconnected from server');
                 console.log('WebSocket connection closed');
+                document.getElementById('executeBtn').disabled = true;
             };
+        }
+
+        function checkExecutionLimit() {
+            if (executionCount >= maxExecutions) {
+                socket.close();
+                showNotification(`Execution limit reached. Disconnected for 2 hours.`);
+                reconnectTimeout = setTimeout(() => {
+                    reconnectTimeout = null;
+                    executionCount = 0;
+                    lastResetTime = Date.now();
+                    showNotification('Cooldown period ended. You can reconnect now.');
+                }, resetPeriod);
+            } else {
+                showNotification(`Executions remaining: ${maxExecutions - executionCount}`);
+            }
         }
 
         function updateConnectionStatus(connected) {
