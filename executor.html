@@ -472,6 +472,54 @@
             </div>
         </div>
     </div>
+
+    <div id="howToUseModal" class="modal"></div>
+        <div class="modal-content">
+            <h2>How to Use Re-Exec Ultra Pro</h2>
+            <ol>
+                <li>Connect to the server:
+                    <ul>
+                        <li>The application will automatically attempt to connect to the server.</li>
+                        <li>Check the connection status in the top-right corner of the editor.</li>
+                    </ul>
+                </li>
+                <li>Write or load a script:
+                    <ul>
+                        <li>Use the code editor to write your Lua script.</li>
+                        <li>Alternatively, load an existing script from the workspace panel.</li>
+                    </ul>
+                </li>
+                <li>Execute your script:
+                    <ul>
+                        <li>Click the "Execute" button to run your current script.</li>
+                        <li>Enable "Auto Execute" for automatic execution when receiving a Re-Exec signal.</li>
+                    </ul>
+                </li>
+                <li>Manage your scripts:
+                    <ul>
+                        <li>Save your script using the "Save Script" button.</li>
+                        <li>Organize scripts by categories.</li>
+                        <li>Use the workspace panel to load, rename, or delete scripts.</li>
+                    </ul>
+                </li>
+                <li>Customize your experience:
+                    <ul>
+                        <li>Access settings by clicking the "Settings" button.</li>
+                        <li>Adjust theme, color scheme, font size, and other preferences.</li>
+                    </ul>
+                </li>
+                <li>Import/Export scripts:
+                    <ul>
+                        <li>Use the "Export Scripts" button to save your scripts externally.</li>
+                        <li>Use the "Import Scripts" button to load previously exported scripts.</li>
+                    </ul>
+                </li>
+            </ol>
+            <div class="modal-buttons">
+                <button id="closeHowToUse">Close</button>
+            </div>
+        </div>
+    </div>
     
     <div id="renameModal" class="modal">
         <div class="modal-content">
@@ -1025,7 +1073,12 @@
         document.getElementById('settingsBtn').addEventListener('click', () => {
             document.getElementById('settingsModal').style.display = 'block';
         });
-        document.getElementById('helpBtn').addEventListener('click', () => showNotification('How to use functionality not implemented'));
+        document.getElementById('helpBtn').addEventListener('click', () => {
+            document.getElementById('howToUseModal').style.display = 'block';
+        });
+        document.getElementById('closeHowToUse').addEventListener('click', () => {
+            document.getElementById('howToUseModal').style.display = 'none';
+        });
         document.getElementById('discordBtn').addEventListener('click', () => window.open('https://discord.com', '_blank'));
 
         document.getElementById('saveSettings').addEventListener('click', saveSettings);
