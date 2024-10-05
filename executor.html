@@ -680,6 +680,10 @@
         let editor;
         let socket;
         let workspaceVisible = true;
+        const maxExecutions = 3;
+        const resetPeriod = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+        let executionCount = 0;
+        let lastResetTime = Date.now();
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
@@ -826,6 +830,20 @@
         }
 
         function executeCurrentCode() {
+
+            const currentTime = Date.now();
+            if (currentTime - lastResetTime >= resetPeriod) {
+                executionCount = 0;
+                lastResetTime = currentTime;
+            }
+
+            if (executionCount >= maxExecutions) {
+                const remainingTime = Math.ceil((resetPeriod - (currentTime - lastResetTime)) / 60000);
+                showNotification(`Execution limit reached. Please try again in ${remainingTime} minutes.`);
+                return;
+            }
+
+
             const code = editor.getValue();
             if (code.trim() === '') {
                 showNotification('No code to execute.');
@@ -836,7 +854,8 @@
                 return;
             }
             socket.send(code);
-            showNotification('Executing code...');
+            executionCount++;
+            showNotification(`Executing code... (${maxExecutions - executionCount} executions remaining)`);
         }
 
         function toggleAutoExecute() {
