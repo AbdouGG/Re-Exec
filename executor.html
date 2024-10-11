@@ -740,23 +740,31 @@
             };
         }
 
-        function canExecute() {
+        function getExecutionHistory() {
+            const history = localStorage.getItem('executionHistory');
+            return history ? JSON.parse(history) : [];
+        }
+        function saveExecutionHistory(history) {
+            localStorage.setItem('executionHistory', JSON.stringify(history));
+        }
+
+        function cleanupExecutionHistory() {
             const now = Date.now();
-            const userExecutionHistory = userExecutions.get('user') || [];
+            const history = getExecutionHistory().filter(time => time > now - TIME_WINDOW);
+            saveExecutionHistory(history);
+            return history;
+        }
+
+
+        function canExecute() {
+            const history = cleanupExecutionHistory();
             
-            // Remove executions older than the time window
-            while (userExecutionHistory.length > 0 && userExecutionHistory[0] < now - TIME_WINDOW) {
-                userExecutionHistory.shift();
-            }
-            
-            // Check if user has exceeded the limit
-            if (userExecutionHistory.length >= MAX_EXECUTIONS) {
+            if (history.length >= MAX_EXECUTIONS) {
                 return false;
             }
             
-            // Add current execution time
-            userExecutionHistory.push(now);
-            userExecutions.set('user', userExecutionHistory);
+            history.push(Date.now());
+            saveExecutionHistory(history);
             
             return true;
         }
