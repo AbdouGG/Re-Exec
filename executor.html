@@ -683,6 +683,9 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
+        let userExecutions = new Map();
+        const MAX_EXECUTIONS = 3;
+        const TIME_WINDOW = 3 * 60 * 1000; // 3 minutes in milliseconds
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -735,6 +738,27 @@
                 showNotification('Disconnected from server');
                 console.log('WebSocket connection closed');
             };
+        }
+
+        function canExecute() {
+            const now = Date.now();
+            const userExecutionHistory = userExecutions.get('user') || [];
+            
+            // Remove executions older than the time window
+            while (userExecutionHistory.length > 0 && userExecutionHistory[0] < now - TIME_WINDOW) {
+                userExecutionHistory.shift();
+            }
+            
+            // Check if user has exceeded the limit
+            if (userExecutionHistory.length >= MAX_EXECUTIONS) {
+                return false;
+            }
+            
+            // Add current execution time
+            userExecutionHistory.push(now);
+            userExecutions.set('user', userExecutionHistory);
+            
+            return true;
         }
 
         function updateConnectionStatus(connected) {
@@ -826,6 +850,11 @@
         }
 
         function executeCurrentCode() {
+            if (!canExecute()) {
+                showNotification('Execution limit reached. Please wait before trying again.');
+                return;
+            }
+
             const code = editor.getValue();
             if (code.trim() === '') {
                 showNotification('No code to execute.');
@@ -851,6 +880,11 @@
         }
 
         function executeScript(scriptName) {
+            if (!canExecute()) {
+                showNotification('Execution limit reached. Please wait before trying again.');
+                return;
+            }
+
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             const scriptContent = scripts[scriptName].content;
             
