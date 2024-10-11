@@ -237,6 +237,14 @@
             return true;
         }
 
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const remainingSeconds = seconds % 60;
+
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
         function updateTimer() {
             const history = cleanupExecutionHistory();
             const timerElement = document.getElementById('timer');
@@ -246,7 +254,7 @@
                 const timeLeft = Math.ceil((oldestExecution + TIME_WINDOW - Date.now()) / 1000);
                 
                 if (timeLeft > 0) {
-                    timerElement.textContent = `Cooldown: ${timeLeft}s`;
+                    timerElement.textContent = `Cooldown: ${formatTime(timeLeft)}`;
                     localStorage.setItem('lastTimerUpdate', Date.now().toString());
                 } else {
                     timerElement.textContent = '';
