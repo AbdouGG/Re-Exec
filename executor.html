@@ -247,12 +247,22 @@
                 
                 if (timeLeft > 0) {
                     timerElement.textContent = `Cooldown: ${timeLeft}s`;
+                    localStorage.setItem('lastTimerUpdate', Date.now().toString());
                 } else {
                     timerElement.textContent = '';
                     clearInterval(timerInterval);
+                    localStorage.removeItem('lastTimerUpdate');
                 }
             } else {
                 timerElement.textContent = `Executions left: ${MAX_EXECUTIONS - history.length}`;
+                localStorage.removeItem('lastTimerUpdate');
+            }
+        }
+
+        function startTimer() {
+            updateTimer();
+            if (!timerInterval) {
+                timerInterval = setInterval(updateTimer, 1000);
             }
         }
 
@@ -280,6 +290,19 @@
             }
         }
 
+        window.addEventListener('load', () => {
+            const lastUpdate = localStorage.getItem('lastTimerUpdate');
+            if (lastUpdate) {
+                const timePassed = Date.now() - parseInt(lastUpdate);
+                if (timePassed < TIME_WINDOW) {
+                    startTimer();
+                } else {
+                    localStorage.removeItem('lastTimerUpdate');
+                }
+            }
+            updateTimer(); // Always update the timer to show current state
+        });
+
         document.getElementById('executeBtn').addEventListener('click', executeCurrentCode);
 
         document.getElementById('clearBtn').addEventListener('click', () => {
@@ -288,7 +311,6 @@
         });
 
         connectToWebSocket();
-        updateTimer();
     </script>
 </body>
 </html>
