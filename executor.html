@@ -3,35 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Re-Exec Basic with Redeem Codes</title>
+    <title>Re-Exec Ultra Pro</title>
+    <link rel="icon" type="image/png" href="Logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
     <style>
+        :root {
+            /* Dark theme (default) */
+            --bg-color: #1e1e2e;
+            --primary-color: #89b4fa;
+            --secondary-color: #f38ba8;
+            --text-color: #cdd6f4;
+            --dark-bg: #181825;
+            --light-bg: #313244;
+            --success-color: #a6e3a1;
+            --error-color: #f38ba8;
+        }
+
+        body.light-theme {
+            --bg-color: #f0f0f0;
+            --primary-color: #3584e4;
+            --secondary-color: #e01b24;
+            --text-color: #2e3436;
+            --dark-bg: #d3d7cf;
+            --light-bg: #ffffff;
+            --success-color: #33d17a;
+            --error-color: #e01b24;
+        }
+
+        /* Color schemes */
+        body.blue-scheme {
+            --primary-color: #3584e4;
+            --secondary-color: #62a0ea;
+        }
+
+        body.green-scheme {
+            --primary-color: #33d17a;
+            --secondary-color: #57e389;
+        }
+
+        body.purple-scheme {
+            --primary-color: #9141ac;
+            --secondary-color: #c061cb;
+        }
+
         body {
             font-family: 'Roboto', sans-serif;
-            background-color: #1e1e2e;
-            color: #cdd6f4;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         header {
-            background: linear-gradient(135deg, #89b4fa, #f38ba8);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            width: 30px;
+            margin-right: 10px;
         }
 
         .logo h1 {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #181825;
+            color: var(--dark-bg);
             margin: 0;
+        }
+
+        nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        button {
+            background-color: var(--light-bg);
+            border: none;
+            color: var(--text-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #connection-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.7rem;
+            border-radius: 15px;
+            background-color: var(--error-color);
+            color: var(--dark-bg);
+            font-weight: 500;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        #connection-status.connected {
+            background-color: var(--success-color);
+        }
+
+        #connection-status i {
+            margin-right: 0.3rem;
         }
 
         main {
@@ -42,27 +142,37 @@
         }
 
         #editor-container {
-            background-color: #181825;
+            background-color: var(--dark-bg);
             border-radius: 10px;
             overflow: hidden;
             flex-grow: 1;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
+            transition: width 0.3s ease;
         }
 
         #editor-header {
-            background-color: #313244;
+            background-color: var(--light-bg);
             padding: 0.7rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid var(--primary-color);
         }
 
         #editor-header h2 {
             font-size: 1rem;
             font-weight: 600;
-            color: #89b4fa;
+            color: var(--primary-color);
             margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        #editor-controls {
+            display: flex;
+            gap: 0.5rem;
         }
 
         #editor {
@@ -70,64 +180,258 @@
             flex-grow: 1;
         }
 
-        button {
-            background-color: #313244;
-            border: none;
-            color: #cdd6f4;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
+        #autoExecuteBtn.active {
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+        }
+
+        #workspace {
+            width: 230px;
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            padding: 0.7rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
             transition: all 0.3s ease;
-            font-weight: 500;
+            overflow: hidden;
+            max-width: 230px;
+        }
+
+        #workspace h3 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+        #scriptName, #scriptCategory {
+            background-color: var(--light-bg);
+            border: none;
+            padding: 0.4rem;
+            border-radius: 5px;
+            color: var(--text-color);
+            width: 100%;
             font-size: 0.8rem;
         }
 
-        button:hover {
-            background-color: #89b4fa;
-            color: #181825;
+        #scriptCategory {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+        }
+
+        #scriptCategory option {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+        }
+
+        #script-list-container {
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) var(--dark-bg);
+        }
+
+        #script-list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #script-list-container::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        #script-list-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 3px;
+            border: 2px solid var(--dark-bg);
+        }
+
+        #scriptList {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #scriptList li {
+            padding: 0.4rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        #scriptList li:hover {
+            background-color: var(--light-bg);
+        }
+
+        #scriptList li button {
+            background-color: transparent;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 0.2rem;
+            margin-left: 0.3rem;
+            transition: all 0.3s ease;
+            font-size: 0.7rem;
+        }
+
+        #scriptList li button:hover {
+            color: var(--primary-color);
+        }
+
+        .category {
+            font-size: 0.7rem;
+            color: var(--primary-color);
+            background-color: rgba(137, 180, 250, 0.1);
+            padding: 0.1rem 0.3rem;
+            border-radius: 10px;
         }
 
         #notification {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: #89b4fa;
-            color: #181825;
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
             padding: 0.7rem 1rem;
             border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
             display: none;
             animation: slideIn 0.3s ease-out;
+            font-size: 0.8rem;
         }
 
-        #timer {
-            font-size: 0.9rem;
-            color: #f38ba8;
-            margin-left: 1rem;
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
         }
 
-        #redeem-container {
-            margin-top: 1rem;
-            display: flex;
-            gap: 0.5rem;
+        .modal-content {
+            background-color: var(--dark-bg);
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        #redeemCode {
-            flex-grow: 1;
-            padding: 0.5rem;
+        .modal h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .modal h3 {
+            color: var(--secondary-color);
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .modal p {
+            margin-bottom: 20px;
+        }
+
+        .modal input[type="text"],
+        .modal input[type="number"],
+        .modal select,
+        .modal textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--light-bg);
             border-radius: 5px;
-            border: 1px solid #313244;
-            background-color: #1e1e2e;
-            color: #cdd6f4;
+            background-color: var(--light-bg);
+            color: var(--text-color);
         }
 
-        #redeemBtn {
-            background-color: #f38ba8;
-            color: #181825;
+        .modal input[type="checkbox"] {
+            margin-right: 10px;
         }
 
-        #redeemBtn:hover {
-            background-color: #f5c2e7;
+        .modal input[type="range"] {
+            width: 100%;
         }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal button {
+            padding: 8px 16px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: var(--dark-bg);
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .modal ol {
+            padding-left: 20px;
+        }
+
+        .modal li {
+            margin-bottom: 10px;
+        }
+
+        .modal ul {
+            padding-left: 20px;
+        }
+
+        .modal-buttons {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-buttons button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        
 
         @keyframes slideIn {
             from {
@@ -147,8 +451,25 @@
                 gap: 0.7rem;
             }
 
+            nav {
+                flex-wrap: wrap;
+            }
+
             main {
                 flex-direction: column;
+            }
+
+            #workspace {
+                width: 100% !important;
+            }
+
+            #editor-container {
+                width: 100% !important;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
             }
         }
     </style>
@@ -156,46 +477,224 @@
 <body>
     <header>
         <div class="logo">
-            <h1>Re-Exec Basic with Redeem Codes</h1>
+            <link rel="icon" type="image/png" href="Logo.png">
+            <h1>Re-Exec Ultra Pro</h1>
         </div>
+        <nav>
+            <button id="homeBtn"><i class="fas fa-home"></i> Home</button>
+            <button id="settingsBtn"><i class="fas fa-cog"></i> Settings</button>
+            <button id="helpBtn"><i class="fas fa-question-circle"></i> How to use</button>
+            <button id="discordBtn"><i class="fab fa-discord"></i> Discord</button>
+        </nav>
     </header>
 
     <main>
         <div id="editor-container">
             <div id="editor-header">
-                <h2>Code Editor</h2>
+                <h2>Code Editor <span id="connection-status"><i class="fas fa-plug"></i> <span id="status-text">Not Connected</span></span></h2>
                 <div id="editor-controls">
                     <button id="executeBtn"><i class="fas fa-play"></i> Execute</button>
                     <button id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
-                    <span id="timer"></span>
+                    <button id="toggleWorkspaceBtn"><i class="fas fa-columns"></i> Toggle Workspace</button>
+                    <button id="autoExecuteBtn"><i class="fas fa-bolt"></i> Auto Execute: Off</button>
                 </div>
             </div>
             <div id="editor"></div>
-            <div id="redeem-container">
-                <input type="text" id="redeemCode" placeholder="Enter redeem code">
-                <button id="redeemBtn">Redeem</button>
+        </div>
+        <div id="workspace">
+            <h3>Workspace</h3>
+            <input type="text" id="scriptName" placeholder="Script name">
+            <select id="scriptCategory">
+                <option value="">All Categories</option>
+                <option value="General">General</option>
+                <option value="Utility">Utility</option>
+                <option value="Game">Game</option>
+            </select>
+            <button id="saveScriptBtn"><i class="fas fa-save"></i> Save Script</button>
+            <button id="exportScriptsBtn"><i class="fas fa-file-export"></i> Export Scripts</button>
+            <input type="file" id="importFile" style="display: none;" multiple>
+            <button id="importScriptsBtn"><i class="fas fa-file-import"></i> Import Scripts</button>
+            <div id="script-list-container">
+                <ul id="scriptList"></ul>
             </div>
         </div>
     </main>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h2>Delete Script</h2>
+            <p>Are you sure you want to delete the script: <span id="deleteScriptName"></span>?</p>
+            <div class="modal-buttons">
+                <button id="confirmDelete">Delete</button>
+                <button id="cancelDelete">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="howToUseModal" class="modal">
+        <div class="modal-content">
+            <h2>How to Use Re-Exec Ultra Pro</h2>
+            <ol>
+                <li>Connect to the server:
+                    <ul>
+                        <li>The application will automatically attempt to connect to the server.</li>
+                        <li>Check the connection status in the top-right corner of the editor.</li>
+                    </ul>
+                </li>
+                <li>Write or load a script:
+                    <ul>
+                        <li>Use the code editor to write your Lua script.</li>
+                        <li>Alternatively, load an existing script from the workspace panel.</li>
+                    </ul>
+                </li>
+                <li>Execute your script:
+                    <ul>
+                        <li>Click the "Execute" button to run your current script.</li>
+                        <li>Enable "Auto Execute" for automatic execution when receiving a Re-Exec signal.</li>
+                    </ul>
+                </li>
+                <li>Manage your scripts:
+                    <ul>
+                        <li>Save your script using the "Save Script" button.</li>
+                        <li>Organize scripts by categories.</li>
+                        <li>Use the workspace panel to load, rename, or delete scripts.</li>
+                    </ul>
+                </li>
+                <li>Customize your experience:
+                    <ul>
+                        <li>Access settings by clicking the "Settings" button.</li>
+                        <li>Adjust theme, color scheme, font size, and other preferences.</li>
+                    </ul>
+                </li>
+                <li>Import/Export scripts:
+                    <ul>
+                        <li>Use the "Export Scripts" button to save your scripts externally.</li>
+                        <li>Use the "Import Scripts" button to load previously exported scripts.</li>
+                    </ul>
+                </li>
+            </ol>
+            <div class="modal-buttons">
+                <button id="closeHowToUse">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="renameModal" class="modal">
+        <div class="modal-content">
+            <h2>Rename Script</h2>
+            <p>Enter new name for the script: <span id="oldScriptName"></span></p>
+            <input type="text" id="newScriptName" placeholder="New script name">
+            <div class="modal-buttons">
+                <button id="confirmRename">Rename</button>
+                <button id="cancelRename">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <h2>Settings</h2>
+            
+            <h3>Theme Settings</h3>
+            <div>
+                <label for="themeToggle">Theme:</label>
+                <select id="themeToggle">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+            <div>
+                <label for="colorScheme">Color Scheme:</label>
+                <select id="colorScheme">
+                    <option value="default">Default</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="purple">Purple</option>
+                </select>
+            </div>
+            <div>
+                <label for="fontSize">Font Size:</label>
+                <input type="range" id="fontSize" min="8" max="24" step="1">
+            </div>
+
+            <h3>Editor Settings</h3>
+            <div>
+                <input type="checkbox" id="autoSave">
+                <label for="autoSave">Auto-save</label>
+            </div>
+            <div>
+                <label for="autoSaveInterval">Auto-save Interval (seconds):</label>
+                <input type="number" id="autoSaveInterval" min="5" max="3600" value="30">
+            </div>
+            <div>
+                <input type="checkbox" id="autoComplete">
+                <label for="autoComplete">Auto-complete</label>
+            </div>
+            <div>
+                <input type="checkbox" id="lineNumbers">
+                <label for="lineNumbers">Line numbers</label>
+            </div>
+            <div>
+                <input type="checkbox" id="minimap">
+                <label for="minimap">Minimap</label>
+            </div>
+            <div>
+                <label for="tabSize">Tab Size:</label>
+                <input type="number" id="tabSize" min="1" max="8" value="4">
+            </div>
+            <div>
+                <input type="checkbox" id="wordWrap">
+                <label for="wordWrap">Word wrap</label>
+            </div>
+
+            <h3>Script Management</h3>
+            <div>
+                <label for="defaultCategory">Default Category:</label>
+                <select id="defaultCategory">
+                    <option value="general">General</option>
+                    <option value="utility">Utility</option>
+                    <option value="game">Game</option>
+                </select>
+            </div>
+            <div>
+                <label for="autoCategorization">Auto-categorization Rules:</label>
+                <textarea id="autoCategorization" rows="3" placeholder="Enter rules..."></textarea>
+            </div>
+            <div style="margin-top: 20px;">
+                <button id="backupScripts">Backup Scripts</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <button id="restoreScripts">Restore Scripts</button>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="saveSettings">Save Settings</button>
+                <button id="closeSettings">Close</button>
+            </div>
+        </div>
+    </div>
 
     <div id="notification"></div>
 
     <script>
         let editor;
         let socket;
-        let userExecutions = new Map();
-        let MAX_EXECUTIONS = 3;
-        let TIME_WINDOW = 3 * 60 * 1000; // 3 minutes in milliseconds
-        let timerInterval;
+        let workspaceVisible = true;
+        let autoSaveCount = 0;
+        let autoSaveInterval;
+        let selectedScript = null;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
             editor = monaco.editor.create(document.getElementById('editor'), {
-                value: "-- Welcome to Re-Exec Basic\n-- Start coding here...",
+                value: "-- Welcome to Re-Exec Ultra Pro\n-- Start coding here...",
                 language: 'lua',
                 theme: 'vs-dark',
                 automaticLayout: true
             });
+            loadScripts();
+            loadSettings();
+            applySettings();
         });
 
         const pathParts = window.location.pathname.split('/');
@@ -211,11 +710,19 @@
             socket = new WebSocket(`ws://${decodedIP}:7890/Execute?token=${token}`);
 
             socket.onopen = function() {
+                updateConnectionStatus(true);
                 showNotification('Connected to server');
             };
 
             socket.onmessage = (event) => {
-                showNotification('Script executed successfully!');
+                if (event.data === 'Re-Exec') {
+                    showNotification('Re-Exec signal received');
+                    if (document.getElementById('autoExecuteBtn').classList.contains('active')) {
+                        executeCurrentCode();
+                    }
+                } else {
+                    showNotification('Script executed successfully!');
+                }
             };
 
             socket.onerror = function(error) {
@@ -224,9 +731,17 @@
             };
 
             socket.onclose = function() {
+                updateConnectionStatus(false);
                 showNotification('Disconnected from server');
                 console.log('WebSocket connection closed');
             };
+        }
+
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-text');
+            statusElement.className = connected ? 'connected' : '';
+            statusText.textContent = connected ? 'Connected' : 'Not Connected';
         }
 
         function showNotification(message) {
@@ -236,78 +751,81 @@
             setTimeout(() => notification.style.display = 'none', 3000);
         }
 
-        function getExecutionHistory() {
-            const history = localStorage.getItem('executionHistory');
-            return history ? JSON.parse(history) : [];
-        }
-
-        function saveExecutionHistory(history) {
-            localStorage.setItem('executionHistory', JSON.stringify(history));
-        }
-
-        function cleanupExecutionHistory() {
-            const now = Date.now();
-            const history = getExecutionHistory().filter(time => time > now - TIME_WINDOW);
-            saveExecutionHistory(history);
-            return history;
-        }
-
-        function canExecute() {
-            const history = cleanupExecutionHistory();
+        // Function for manual saving
+        function manualSaveScript() {
+            const scriptName = document.getElementById('scriptName').value.trim();
+            const scriptContent = editor.getValue();
+            const scriptCategory = document.getElementById('scriptCategory').value;
             
-            if (history.length >= MAX_EXECUTIONS) {
-                return false;
-            }
-            
-            history.push(Date.now());
-            saveExecutionHistory(history);
-            
-            return true;
-        }
-
-        function formatTime(seconds) {
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            const remainingSeconds = seconds % 60;
-
-            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-        }
-
-        function updateTimer() {
-            const history = cleanupExecutionHistory();
-            const timerElement = document.getElementById('timer');
-            
-            if (history.length >= MAX_EXECUTIONS) {
-                const oldestExecution = history[0];
-                const timeLeft = Math.ceil((oldestExecution + TIME_WINDOW - Date.now()) / 1000);
-                
-                if (timeLeft > 0) {
-                    timerElement.textContent = `Cooldown: ${formatTime(timeLeft)}`;
-                    localStorage.setItem('lastTimerUpdate', Date.now().toString());
-                } else {
-                    timerElement.textContent = '';
-                    clearInterval(timerInterval);
-                    localStorage.removeItem('lastTimerUpdate');
-                }
-            } else {
-                timerElement.textContent = `Executions left: ${MAX_EXECUTIONS - history.length}`;
-                localStorage.removeItem('lastTimerUpdate');
-            }
-        }
-
-        function startTimer() {
-            updateTimer();
-            if (!timerInterval) {
-                timerInterval = setInterval(updateTimer, 1000);
-            }
-        }
-
-        function executeCurrentCode() {
-            if (!canExecute()) {
-                showNotification('Execution limit reached. Please wait before trying again.');
+            if (!scriptName) {
+                showNotification('Please enter a script name');
                 return;
             }
 
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            scripts[scriptName] = { content: scriptContent, category: scriptCategory };
+            localStorage.setItem('scripts', JSON.stringify(scripts));
+            
+            showNotification(`Script saved as: ${scriptName}`);
+            loadScripts();
+        }
+
+        
+
+        // Separate function for auto-save
+        function autoSaveScript() {
+            autoSaveCount++;
+            const scriptName = `autosave_${autoSaveCount}`;
+            const scriptContent = editor.getValue();
+            const scriptCategory = document.getElementById('scriptCategory').value;
+
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            scripts[scriptName] = { content: scriptContent, category: scriptCategory };
+            localStorage.setItem('scripts', JSON.stringify(scripts));
+            
+            showNotification(`Auto-saved as: ${scriptName}`);
+            loadScripts();
+        }
+
+        function setupAutoSave() {
+            const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+            if (settings.autoSave) {
+                const interval = parseInt(settings.autoSaveInterval) * 1000;
+                autoSaveInterval = setInterval(autoSaveScript, interval);
+            } else if (autoSaveInterval) {
+                clearInterval(autoSaveInterval);
+            }
+        }
+
+        function loadScripts() {
+            const scriptList = document.getElementById('scriptList');
+            scriptList.innerHTML = '';
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            
+            for (const [name, scriptData] of Object.entries(scripts)) {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${name}</span>
+                    <span class="category">${scriptData.category}</span>
+                    <button onclick="loadScript('${name}')"><i class="fas fa-edit"></i></button>
+                    <button onclick="renameScript('${name}')"><i class="fas fa-pencil-alt"></i></button>
+                    <button onclick="deleteScript('${name}')"><i class="fas fa-trash"></i></button>
+                `;
+                scriptList.appendChild(li);
+            }
+        }
+
+        function loadScript(name) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const scriptData = scripts[name];
+            editor.setValue(scriptData.content);
+            document.getElementById('scriptName').value = name;
+            document.getElementById('scriptCategory').value = scriptData.category;
+            selectedScript = name;
+            showNotification(`Loaded script: ${name}`);
+        }
+
+        function executeCurrentCode() {
             const code = editor.getValue();
             if (code.trim() === '') {
                 showNotification('No code to execute.');
@@ -319,59 +837,248 @@
             }
             socket.send(code);
             showNotification('Executing code...');
-            updateTimer();
-            
-            if (!timerInterval) {
-                timerInterval = setInterval(updateTimer, 1000);
-            }
         }
 
-        function redeemCode() {
-            const code = document.getElementById('redeemCode').value.trim();
-            if (code === '') {
-                showNotification('Please enter a redeem code.');
-                return;
-            }
-
-            const usedCodes = JSON.parse(localStorage.getItem('usedCodes') || '[]');
-            if (usedCodes.includes(code)) {
-                showNotification('This code has already been used.');
-                return;
-            }
-
-            usedCodes.push(code);
-            localStorage.setItem('usedCodes', JSON.stringify(usedCodes));
-
-            if (code.startsWith('TIME')) {
-                const additionalTime = parseInt(code.slice(4)) * 60 * 1000; // Convert minutes to milliseconds
-                TIME_WINDOW += additionalTime;
-                showNotification(`Added ${additionalTime / (60 * 1000)} minutes to your time window.`);
-            } else if (code.startsWith('EXEC')) {
-                const additionalExecutions = parseInt(code.slice(4));
-                MAX_EXECUTIONS += additionalExecutions;
-                showNotification(`Added ${additionalExecutions} executions to your limit.`);
+        function toggleAutoExecute() {
+            const autoExecuteBtn = document.getElementById('autoExecuteBtn');
+            if (autoExecuteBtn.classList.contains('active')) {
+                autoExecuteBtn.classList.remove('active');
+                autoExecuteBtn.innerHTML = '<i class="fas fa-bolt"></i> Auto Execute: Off';
             } else {
-                showNotification('Invalid redeem code.');
-                return;
+                autoExecuteBtn.classList.add('active');
+                autoExecuteBtn.innerHTML = '<i class="fas fa-bolt"></i> Auto Execute: On';
             }
-
-            document.getElementById('redeemCode').value = '';
-            updateTimer();
         }
 
-        window.addEventListener('load', () => {
-            const lastUpdate = localStorage.getItem('lastTimerUpdate');
-            if (lastUpdate) {
-                const timePassed = Date.now() - parseInt(lastUpdate);
-                if (timePassed < TIME_WINDOW) {
-                    startTimer();
-                } else {
-                    localStorage.removeItem('lastTimerUpdate');
+        function executeScript(scriptName) {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            const scriptContent = scripts[scriptName].content;
+            
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                showNotification('Not connected to server.');
+                return;
+            }
+            
+            socket.send(scriptContent);
+            showNotification(`Executing script: ${scriptName}`);
+        }
+
+        function renameScript(oldName) {
+            const renameModal = document.getElementById('renameModal');
+            const oldScriptName = document.getElementById('oldScriptName');
+            const newScriptName = document.getElementById('newScriptName');
+            
+            oldScriptName.textContent = oldName;
+            newScriptName.value = oldName;
+            renameModal.style.display = 'block';
+
+            document.getElementById('confirmRename').onclick = function() {
+                const newName = newScriptName.value.trim();
+                if (newName && newName !== oldName) {
+                    const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                    scripts[newName] = scripts[oldName];
+                    delete scripts[oldName];
+                    localStorage.setItem('scripts', JSON.stringify(scripts));
+                    loadScripts();
+                    showNotification(`Script renamed to: ${newName}`);
+                }
+                renameModal.style.display = 'none';
+            };
+
+            document.getElementById('cancelRename').onclick = function() {
+                renameModal.style.display = 'none';
+            };
+        }
+
+        function deleteScript(name) {
+            const deleteModal = document.getElementById('deleteModal');
+            const deleteScriptName = document.getElementById('deleteScriptName');
+            
+            deleteScriptName.textContent = name;
+            deleteModal.style.display = 'block';
+
+            document.getElementById('confirmDelete').onclick = function() {
+                const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+                delete scripts[name];
+                localStorage.setItem('scripts', JSON.stringify(scripts));
+                loadScripts();
+                showNotification(`Script deleted: ${name}`);
+                deleteModal.style.display = 'none';
+            };
+
+            document.getElementById('cancelDelete').onclick = function() {
+                deleteModal.style.display = 'none';
+            };
+        }
+
+        function exportScripts() {
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            let luaContent = '';
+            for (const [name, scriptData] of Object.entries(scripts)) {
+                luaContent += `-- Script: ${name}\n-- Category: ${scriptData.category}\n${scriptData.content}\n\n`;
+            }
+            const blob = new Blob([luaContent], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'scripts_export.lua';
+            a.click();
+        }
+
+        function importScripts(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+            let importedCount = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const content = e.target.result;
+                    const scriptName = file.name.replace('.lua', '');
+                    
+                    let category = "General";
+                    const categoryMatch = content.match(/-- Category: (.+)/);
+                    if (categoryMatch) {
+                        category = categoryMatch[1].trim();
+                    }
+
+                    scripts[scriptName] = { content: content, category: category };
+                    importedCount++;
+
+                    if (importedCount === files.length) {
+                        localStorage.setItem('scripts', JSON.stringify(scripts));
+                        loadScripts();
+                        showNotification(`Imported ${importedCount} script(s) successfully`);
+                    }
+                };
+
+                reader.readAsText(file);
+            }
+        }
+
+        function filterScripts() {
+            const category = document.getElementById('scriptCategory').value;
+            const scriptList = document.getElementById('scriptList');
+            const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
+
+            scriptList.innerHTML = '';
+            for (const [name, scriptData] of Object.entries(scripts)) {
+                if (category === '' || scriptData.category === category) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>${name}</span>
+                        <span class="category">${scriptData.category}</span>
+                        <button onclick="loadScript('${name}')"><i class="fas fa-edit"></i></button>
+                        <button onclick="renameScript('${name}')"><i class="fas fa-pencil-alt"></i></button>
+                        <button onclick="deleteScript('${name}')"><i class="fas fa-trash"></i></button>
+                    `;
+                    scriptList.appendChild(li);
                 }
             }
-            updateTimer();
-        });
+        }
 
+        function toggleWorkspace() {
+            workspaceVisible = !workspaceVisible;
+            const workspace = document.getElementById('workspace');
+            const editorContainer = document.getElementById('editor-container');
+            const toggleBtn = document.getElementById('toggleWorkspaceBtn');
+
+            workspace.style.transition = 'max-width 0.3s ease-in-out, padding 0.3s ease-in-out';
+            editorContainer.style.transition = 'width 0.3s ease-in-out';
+
+            if (workspaceVisible) {
+                workspace.style.maxWidth = '230px';
+                workspace.style.padding = '0.7rem';
+                editorContainer.style.width = 'calc(100% - 250px)';
+            } else {
+                workspace.style.maxWidth = '0';
+                workspace.style.padding = '0';
+                editorContainer.style.width = '100%';
+            }
+
+            toggleBtn.innerHTML = workspaceVisible ? '<i class="fas fa-columns"></i> Hide Workspace' : '<i class="fas fa-columns"></i> Show Workspace';
+
+            setTimeout(() => {
+                workspace.style.overflow = workspaceVisible ? 'visible' : 'hidden';
+                editor.layout();
+            }, 300);
+        }
+
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+            
+            document.getElementById('themeToggle').value = settings.theme || 'dark';
+            document.getElementById('colorScheme').value = settings.colorScheme || 'default';
+            document.getElementById('fontSize').value = settings.fontSize || '14';
+            document.getElementById('autoSave').checked = settings.autoSave || false;
+            document.getElementById('autoSaveInterval').value = settings.autoSaveInterval || '30';
+            document.getElementById('autoComplete').checked = settings.autoComplete !== false;
+            document.getElementById('lineNumbers').checked = settings.lineNumbers !== false;
+            document.getElementById('minimap').checked = settings.minimap || false;
+            document.getElementById('tabSize').value = settings.tabSize || '4';
+            document.getElementById('wordWrap').checked = settings.wordWrap || false;
+            document.getElementById('defaultCategory').value = settings.defaultCategory || 'general';
+            document.getElementById('autoCategorization').value = settings.autoCategorization || '';
+        }
+
+        function saveSettings() {
+            const settings = {
+                theme: document.getElementById('themeToggle').value,
+                colorScheme: document.getElementById('colorScheme').value,
+                fontSize: document.getElementById('fontSize').value,
+                autoSave: document.getElementById('autoSave').checked,
+                autoSaveInterval: document.getElementById('autoSaveInterval').value,
+                autoComplete: document.getElementById('autoComplete').checked,
+                lineNumbers: document.getElementById('lineNumbers').checked,
+                minimap: document.getElementById('minimap').checked,
+                tabSize: document.getElementById('tabSize').value,
+                wordWrap: document.getElementById('wordWrap').checked,
+                defaultCategory: document.getElementById('defaultCategory').value,
+                autoCategorization: document.getElementById('autoCategorization').value,
+            };
+
+            localStorage.setItem('settings', JSON.stringify(settings));
+            applySettings();
+            showNotification('Settings saved successfully');
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function applySettings() {
+            const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+
+            document.body.className = settings.theme === 'light' ? 'light-theme' : '';
+
+            document.body.classList.remove('blue-scheme', 'green-scheme', 'purple-scheme');
+            if (settings.colorScheme !== 'default') {
+                document.body.classList.add(`${settings.colorScheme}-scheme`);
+            }
+
+            editor.updateOptions({
+                fontSize: parseInt(settings.fontSize),
+                minimap: { enabled: settings.minimap },
+                lineNumbers: settings.lineNumbers ? 'on' : 'off',
+                tabSize: parseInt(settings.tabSize),
+                wordWrap: settings.wordWrap ? 'on' : 'off',
+                autoClosingBrackets: settings.autoComplete ? 'always' : 'never',
+                autoClosingQuotes: settings.autoComplete ? 'always' : 'never',
+                autoSurround: settings.autoComplete ? 'always' : 'never'
+            });
+
+
+            setupAutoSave();
+
+            document.getElementById('scriptCategory').value = settings.defaultCategory || '';
+
+
+            document.body.style.fontSize = `${settings.fontSize}px`;
+
+            editor.layout();
+        }
+
+        // Event Listeners
         document.getElementById('executeBtn').addEventListener('click', executeCurrentCode);
 
         document.getElementById('clearBtn').addEventListener('click', () => {
@@ -379,7 +1086,73 @@
             showNotification('Code cleared');
         });
 
-        document.getElementById('redeemBtn').addEventListener('click', redeemCode);
+        document.getElementById('backupScripts').addEventListener('click', () => {
+            const scripts = localStorage.getItem('scripts');
+            const blob = new Blob([scripts], {type: 'application/json'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'scripts_backup.json';
+            a.click();
+            showNotification('Scripts backed up successfully');
+        });
+
+        document.getElementById('restoreScripts').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        JSON.parse(e.target.result); // Validate JSON
+                        localStorage.setItem('scripts', e.target.result);
+                        loadScripts();
+                        showNotification('Scripts restored successfully');
+                    } catch (error) {
+                        showNotification('Invalid backup file');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        });
+
+
+        document.getElementById('toggleWorkspaceBtn').addEventListener('click', toggleWorkspace);
+        document.getElementById('saveScriptBtn').addEventListener('click', manualSaveScript);
+        document.getElementById('exportScriptsBtn').addEventListener('click', exportScripts);
+        document.getElementById('autoExecuteBtn').addEventListener('click', toggleAutoExecute);
+        document.getElementById('importScriptsBtn').addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('importFile').addEventListener('change', importScripts);
+        document.getElementById('scriptCategory').addEventListener('change', filterScripts);
+
+        document.getElementById('homeBtn').addEventListener('click', () => showNotification('Home functionality not implemented'));
+        document.getElementById('settingsBtn').addEventListener('click', () => {
+            document.getElementById('settingsModal').style.display = 'block';
+        });
+        document.getElementById('helpBtn').addEventListener('click', () => {
+            document.getElementById('howToUseModal').style.display = 'block';
+        });
+        document.getElementById('closeHowToUse').addEventListener('click', () => {
+            document.getElementById('howToUseModal').style.display = 'none';
+        });
+        document.getElementById('discordBtn').addEventListener('click', () => window.open('https://discord.com', '_blank'));
+
+        document.getElementById('saveSettings').addEventListener('click', saveSettings);
+        document.getElementById('closeSettings').addEventListener('click', () => {
+            document.getElementById('settingsModal').style.display = 'none';
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
 
         connectToWebSocket();
     </script>
