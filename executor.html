@@ -683,10 +683,6 @@
         let autoSaveCount = 0;
         let autoSaveInterval;
         let selectedScript = null;
-        let cooldownTimer = null;
-        let canExecute = true;
-        let cooldownTime = 120; // 2 minutes in seconds
-        let timeLeft = 0;
 
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs' }});
         require(['vs/editor/editor.main'], function() {
@@ -726,6 +722,7 @@
                     }
                 } else {
                     showNotification('Script executed successfully!');
+                    updateTokenDisplay();
                 }
             };
 
@@ -829,26 +826,58 @@
             showNotification(`Loaded script: ${name}`);
         }
 
-        function updateCooldownTimer() {
-            const executeBtn = document.getElementById('executeBtn');
-            
-            if (timeLeft > 0) {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                executeBtn.innerHTML = `<i class="fas fa-clock"></i> Wait ${minutes}:${seconds.toString().padStart(2, '0')}`;
-                timeLeft--;
-                cooldownTimer = setTimeout(updateCooldownTimer, 1000);
-            } else {
-                canExecute = true;
-                executeBtn.innerHTML = '<i class="fas fa-play"></i> Execute';
-                executeBtn.disabled = false;
-                showNotification('You can execute again!');
+        class TokenBucket {
+            constructor(maxTokens = 3, refillTime = 180000) { // 3 tokens, 180000ms (3 minutes)
+                this.maxTokens = maxTokens;
+                this.refillTime = refillTime;
+                this.tokens = maxTokens;
+                this.lastRefill = Date.now();
+            }
+
+            refillTokens() {
+                const now = Date.now();
+                const timePassed = now - this.lastRefill;
+                const tokensToAdd = Math.floor(timePassed / this.refillTime) * this.maxTokens;
+
+                if (tokensToAdd > 0) {
+                    this.tokens = Math.min(this.tokens + tokensToAdd, this.maxTokens);
+                    this.lastRefill = now - (timePassed % this.refillTime);
+                }
+            }
+
+            hasTokens() {
+                this.refillTokens();
+                return this.tokens > 0;
+            }
+
+            consumeToken() {
+                this.refillTokens();
+                if (this.tokens > 0) {
+                    this.tokens--;
+                    return true;
+                }
+                return false;
+            }
+
+            getTimeUntilNextToken() {
+                const now = Date.now();
+                const timeSinceLastRefill = now - this.lastRefill;
+                return Math.ceil((this.refillTime - (timeSinceLastRefill % this.refillTime)) / 1000);
+            }
+
+            getRemainingTokens() {
+                this.refillTokens();
+                return this.tokens;
             }
         }
 
+        const rateLimiter = new TokenBucket();
+
         function executeCurrentCode() {
-            if (!canExecute) {
-                showNotification('Please wait before executing again');
+            if (!rateLimiter.hasTokens()) {
+                const timeUntilNext = rateLimiter.getTimeUntilNextToken();
+                showNotification(`Rate limit exceeded. Please wait ${timeUntilNext} seconds.`);
+                updateTokenDisplay();
                 return;
             }
 
@@ -862,24 +891,31 @@
                 return;
             }
 
-            // Execute the code
-            socket.send(code);
-            showNotification('Executing code...');
-
-            // Start cooldown
-            canExecute = false;
-            timeLeft = cooldownTime;
-            const executeBtn = document.getElementById('executeBtn');
-            executeBtn.disabled = true;
-            
-            // Clear any existing timer
-            if (cooldownTimer) {
-                clearTimeout(cooldownTimer);
+            if (rateLimiter.consumeToken()) {
+                socket.send(code);
+                showNotification('Executing code...');
+                updateTokenDisplay();
             }
-            
-            // Start the countdown
-            updateCooldownTimer();
         }
+
+        function updateTokenDisplay() {
+            const tokens = rateLimiter.getRemainingTokens();
+            const timeUntilNext = rateLimiter.getTimeUntilNextToken();
+            const tokenDisplay = document.getElementById('token-display');
+            tokenDisplay.textContent = `Tokens: ${tokens}`;
+            
+            if (tokens === 0) {
+                tokenDisplay.title = `Next token in ${timeUntilNext} seconds`;
+            } else {
+                tokenDisplay.title = `${tokens} tokens remaining`;
+            }
+        }
+
+        // Add token refresh timer
+        setInterval(() => {
+            rateLimiter.refillTokens();
+            updateTokenDisplay();
+        }, 1000);
 
         function toggleAutoExecute() {
             const autoExecuteBtn = document.getElementById('autoExecuteBtn');
@@ -892,12 +928,22 @@
             }
         }
 
-        function executeScript(scriptName) {
-            if (!canExecute) {
-                showNotification('Please wait before executing again');
-                return;
-            }
+        // Add token display to the editor header
+        const editorHeader = document.querySelector('#editor-header h2');
+        const tokenDisplay = document.createElement('span');
+        tokenDisplay.id = 'token-display';
+        tokenDisplay.style.marginLeft = '10px';
+        tokenDisplay.style.fontSize = '0.8rem';
+        tokenDisplay.style.padding = '4px 8px';
+        tokenDisplay.style.borderRadius = '12px';
+        tokenDisplay.style.backgroundColor = 'var(--primary-color)';
+        tokenDisplay.style.color = 'var(--dark-bg)';
+        editorHeader.appendChild(tokenDisplay);
 
+        // Initialize token display
+        updateTokenDisplay();
+
+        function executeScript(scriptName) {
             const scripts = JSON.parse(localStorage.getItem('scripts') || '{}');
             const scriptContent = scripts[scriptName].content;
             
@@ -906,23 +952,8 @@
                 return;
             }
             
-            // Execute the script
             socket.send(scriptContent);
             showNotification(`Executing script: ${scriptName}`);
-
-            // Start cooldown
-            canExecute = false;
-            timeLeft = cooldownTime;
-            const executeBtn = document.getElementById('executeBtn');
-            executeBtn.disabled = true;
-            
-            // Clear any existing timer
-            if (cooldownTimer) {
-                clearTimeout(cooldownTimer);
-            }
-            
-            // Start the countdown
-            updateCooldownTimer();
         }
 
         function renameScript(oldName) {
